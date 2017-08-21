@@ -1,0 +1,203 @@
+      PROGRAM COUPLER
+      USE SWAN_COMMON, ONLY : IT,IT0,MTC, DT_SC,TFINC,TINIC,&
+                          SWAN_RUN,SHORECIRC_RUN
+# if defined (TRACKING)
+      USE TRACER
+# endif
+# if defined (PARALLEL)
+
+# if defined (STATIONARY)
+      USE GLOBAL, ONLY : myid,Total_Time,TIME,N_ITERATION
+# else
+      USE GLOBAL, ONLY : myid,Total_Time,TIME
+# endif
+
+# else 
+! no parallel
+
+# if defined (STATIONARY)
+      USE GLOBAL, ONLY : Total_Time,TIME,N_ITERATION
+# else
+      USE GLOBAL, ONLY : Total_Time,TIME
+# endif
+# endif 
+! end parallel
+
+# if defined (ONLINE_RESIDUAL)
+      USE GLOBAL
+# endif
+
+      USE PARAM
+      IMPLICIT NONE
+      REAL(SP) :: TOTAL_SEC,DT_SWAN_SEC,SC_INNER_TIME=ZERO
+# if defined (STATIONARY)
+      INTEGER :: N_STATIONARY_COUNT
+
+# endif
+
+# if defined (ONLINE_RESIDUAL)
+     call MPI_INIT ( ier )
+
+     call MPI_COMM_SIZE(MPI_COMM_WORLD, numberprocessor, ier)
+      call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ier)
+
+# endif
+
+      CALL SWINITMPI                                                     
+
+      CALL SWAN_INITIALIZATION
+
+
+      CALL SHORECIRC_INITIALIZATION
+
+
+      TOTAL_SEC = TFINC-TINIC
+      DT_SWAN_SEC = INT(TOTAL_SEC/MTC)
+      Total_Time = TOTAL_SEC
+
+      DO 500 IT = IT0, MTC
+
+! pass uvz to swan
+     IF(SWAN_RUN.AND.SHORECIRC_RUN)THEN
+# if defined (ONLINE)
+      ! do nothing
+# else
+      CALL SHORECIRC2SWAN
+# endif
+     ENDIF
+
+! call swan
+     IF(SWAN_RUN)THEN
+      CALL SWAN_CYCLE
+     ENDIF
+
+! pass variable from swan to shorecirc
+! note that when shorecirc_run=.false., we still need this pass for 
+! swan output of height etc, not radiation stresses
+     IF(SWAN_RUN)THEN
+      CALL SWAN2SHORECIRC
+     ENDIF
+
+! call shorecirc
+
+# if defined (STATIONARY)
+      N_STATIONARY_COUNT=0
+# if defined (STATIONARY_RE_INITIAL)
+      CALL RE_INITIALIZE_SC
+# endif
+      DO WHILE (N_STATIONARY_COUNT<=N_ITERATION)
+      N_STATIONARY_COUNT=N_STATIONARY_COUNT+1
+# if defined (PARALLEL)
+     IF(N_STATIONARY_COUNT == N_ITERATION)THEN
+      if (myid.eq.0) WRITE(*,*)'Stationary mode, Iteration #', N_STATIONARY_COUNT
+     ENDIF
+# else
+     IF(N_STATIONARY_COUNT == N_ITERATION)THEN
+      WRITE(*,*)'Stationary mode, Iteration #', N_STATIONARY_COUNT
+     ENDIF
+# endif
+
+# else
+!      SC_INNER_TIME = ZERO ! there's small residual, should correct it
+      SC_INNER_TIME = MAX(ZERO,SC_INNER_TIME - DT_SWAN_SEC)
+      DO WHILE (SC_INNER_TIME<DT_SWAN_SEC)
+# endif
+
+
+      IF(SHORECIRC_RUN)THEN
+        CALL SHORECIRC_CYCLE
+      ELSE
+# if defined (STATIONARY)
+        ! do nothing
+# else
+        DT_SC = DT_SWAN_SEC
+        TIME=TIME+DT_SC
+# endif
+      ENDIF
+
+# if defined (STATIONARY)
+    ! do nothing, will do morpho and output outside iteration
+# else
+        SC_INNER_TIME=SC_INNER_TIME+DT_SC
+
+! dye tracer
+# if defined (DYE)
+        IF(SHORECIRC_RUN)THEN
+        CALL DYE_MODULE
+        ENDIF
+# endif
+
+! sediment module
+# if defined (SEDIMENT)
+        IF(SHORECIRC_RUN)THEN
+        CALL MORPHOLOGY_MODULE
+        ENDIF
+# endif  
+! end sediment inside shorecirc
+
+        CALL OUTPUT
+
+# endif  
+! end non-stationary
+
+      END DO
+
+# if defined (STATIONARY)
+         DT_SC = DT_SWAN_SEC ! for sediment
+
+         TIME=TIME+DT_SC     ! for output and water level
+         CALL MORPHOLOGY_MODULE
+         CALL OUTPUT
+# endif
+
+
+ 500      CONTINUE
+
+# if defined (PARALLEL)
+     if (myid.eq.0) WRITE(*,*)'Normal Termination!'
+     if (myid.eq.0) WRITE(3,*)'Normal Termination!'
+# else
+     WRITE(*,*)'Normal Termination!'
+     WRITE(3,*)'Normal Termination!'
+# endif
+
+      CALL SWEXITMPI 
+
+# if defined(ONLINE_RESIDUAL)
+       call MPI_FINALIZE ( ier )
+# endif
+
+      END
+                                    
+SUBROUTINE OUTPUT
+      USE SWAN_COMMON
+      USE GLOBAL
+      IMPLICIT NONE
+
+     SCREEN_COUNT=SCREEN_COUNT+DT_SC
+
+     IF(SCREEN_COUNT>=SCREEN_INTV)THEN
+      SCREEN_COUNT=SCREEN_COUNT-SCREEN_INTV
+      CALL STATISTICS
+     ENDIF
+
+! stations
+      IF(NumberStations>0)THEN
+      PLOT_COUNT_STATION=PLOT_COUNT_STATION+DT_SC
+      IF(PLOT_COUNT_STATION>=PLOT_INTV_STATION)THEN
+       PLOT_COUNT_STATION=PLOT_COUNT_STATION-PLOT_INTV_STATION
+       CALL STATIONS
+      ENDIF
+      ENDIF
+! preview
+      PLOT_COUNT=PLOT_COUNT+DT_SC
+      IF(PLOT_COUNT>=PLOT_INTV)THEN
+       PLOT_COUNT=PLOT_COUNT-PLOT_INTV
+       CALL PREVIEW
+      ENDIF
+
+END SUBROUTINE OUTPUT
+
+
+
+  

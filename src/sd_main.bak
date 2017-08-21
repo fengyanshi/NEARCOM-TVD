@@ -1,0 +1,528 @@
+
+
+#if defined (SEDIMENT)
+SUBROUTINE MORPHOLOGY_MODULE
+       USE SEDI
+       USE PASS, ONLY : DT_SC
+       USE GLOBAL, ONLY : TIME
+       IMPLICIT NONE
+
+      SEDI_TIME_COUNT = SEDI_TIME_COUNT + DT_SC
+      DT_SED_REAL_INTV=DT_SED_REAL_INTV +DT_SC
+
+      IF(SEDI_TIME_COUNT>=T_INTV_sed)THEN
+!        WRITE(*,*) 'CALLING MORPHOLOGY MODULE,','  TIME =',TIME 
+        IF(SOULSBY)THEN
+          CALL SOULSBY_CURRENT_WAVE
+        ELSEIF(KOBAYASHI)THEN
+          CALL KOBAYASHI_CSHORE
+        ENDIF
+        CALL SEA_BED_CHANGE
+        SEDI_TIME_COUNT = SEDI_TIME_COUNT - T_INTV_sed
+        DT_SED_REAL_INTV= ZERO
+      ENDIF
+
+END SUBROUTINE MORPHOLOGY_MODULE
+# else
+SUBROUTINE MORPHOLOGY_MODULE
+! nothing
+END SUBROUTINE MORPHOLOGY_MODULE
+# endif
+
+# if defined (SEDIMENT)
+SUBROUTINE KOBAYASHI_CSHORE
+        USE SEDI
+       USE GLOBAL,ONLY : U,V,Mloc,Nloc,Depth,Mloc1,Nloc1, &
+                         L11,L12,L22,Ubott,Vbott,tmp4preview
+       USE PASS,ONLY : WaveUbottSC,WaveAngleSC,WaveDissSC,WaveHeightSC
+       IMPLICIT NONE
+       REAL(SP) :: TMPK1,TMPK2,sigma_eta,rat_sigma_dep,sigma_t,us,vs,&
+                   rm,Fm,Rb,Rs,Fb2,Pb,fs2,fs,Ps,Gf,Vsus,s2Gs,Fb,Gs, &
+                   s1,s2
+       REAL(SP),DIMENSION(Mloc,Nloc) :: Df
+       REAL(SP) :: erfcc,bed_cross_shore,bed_alongshore,sin_alpha, &
+                   cos_alpha
+
+       IF(FIRST_CALL_SEDIMENT)THEN
+         FIRST_CALL_SEDIMENT = .FALSE.
+         IF(.NOT.ALLOCATED(SedFluxX))THEN
+             ALLOCATE(SedFluxX(Mloc,Nloc))
+             SedFluxX=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(SedFluxY))THEN
+             ALLOCATE(SedFluxY(Mloc,Nloc))
+             SedFluxY=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(SusFluxX))THEN
+             ALLOCATE(SusFluxX(Mloc,Nloc))
+             SusFluxX=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(SusFluxY))THEN
+             ALLOCATE(SusFluxY(Mloc,Nloc))
+             SusFluxY=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(BedFluxX))THEN
+             ALLOCATE(BedFluxX(Mloc,Nloc))
+             BedFluxX=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(BedFluxY))THEN
+             ALLOCATE(BedFluxY(Mloc,Nloc))
+             BedFluxY=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(SlopeX))THEN
+             ALLOCATE(SlopeX(Mloc,Nloc))
+             SlopeX=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(SlopeY))THEN
+             ALLOCATE(SlopeY(Mloc,Nloc))
+             SlopeY=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(DepDt))THEN
+             ALLOCATE(DepDt(Mloc,Nloc))
+             DepDt=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(WaveUbottSC))THEN
+             ALLOCATE(WaveUbottSC(Mloc,Nloc))
+             WaveUbottSC=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(WaveHeightSC))THEN
+             ALLOCATE(WaveHeightSC(Mloc,Nloc))
+             WaveHeightSC=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(WaveAngleSC))THEN
+             ALLOCATE(WaveAngleSC(Mloc,Nloc))
+             WaveAngleSC=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(WaveDissSC))THEN
+             ALLOCATE(WaveDissSC(Mloc,Nloc))
+             WaveDissSC=ZERO
+         ENDIF
+
+         Dst= D_50*(grav*(S_sed-1.0_SP)/nu_water**2)**(1.0_SP/3.0_SP)   !D_star
+         wf= nu_water/D_50*  &
+              (SQRT(10.36_SP*10.36_SP+1.049_SP*Dst**3)-10.36_SP)
+        ENDIF
+
+         CALL CalculateSlope(Mloc,Nloc,Mloc1,Nloc1,&
+              Depth,L11,L12,L22,SlopeX,SlopeY)
+
+! pre-calculated sin and cos alpha, make it variable later
+        sin_alpha=SIN(angle_x_beach*Deg2Rad)
+        cos_alpha=COS(angle_x_beach*Deg2Rad)
+
+        DO 100 J=1,Nloc
+        DO 100 I=1,Mloc
+! wave info
+        sigma_eta=0.125_SP*WaveHeightSC(I,J)
+
+! --- what happens here, close to shoreline? OK Nobu suggested
+! ---  the ratio sigma_eta/dep should be limited to 1
+
+        IF(DEPTH(I,J).LT.0.1_SP)DEPTH(I,J)=0.1_SP
+        rat_sigma_dep=sigma_eta/DEPTH(I,J)
+        IF(rat_sigma_dep.GT.1.0_SP) rat_sigma_dep=1.0_SP
+        sigma_t=sqrt(DEPTH(I,J)*grav)*rat_sigma_dep        
+! Ps and Pb
+        if(sigma_t.LT.0.01_SP)sigma_t=0.01_SP
+        us=Ubott(I,J)/sigma_t
+        vs=Vbott(I,J)/sigma_t
+        rm=-(us*COS(WaveAngleSC(I,J)*Deg2Rad)+vs*SIN(WaveAngleSC(I,J)*Deg2Rad))
+        fm=(vs*COS(WaveAngleSC(I,J)*Deg2Rad)-us*SIN(WaveAngleSC(I,J)*Deg2Rad))
+
+        Rb=(2.0_SP*grav*(S_sed-1.0_SP)*D_50*Si_c/frc/sigma_t/sigma_t)**0.5_SP
+        Rs=(2.0_SP/frc)**(1.0_SP/3.0_SP)*wf/sigma_t
+        Fb2=Rb**2-Fm**2
+        IF(Fb2.GT.ZERO)THEN
+         Fb=SQRT(Fb2)
+         Pb=0.5_SP*erfcc((Fb-Rm)/SQRT(2.0_SP))+0.5_SP*erfcc((Fb+Rm)/SQRT(2.0_SP))
+        ELSE
+         Pb=1.0_SP
+        ENDIF
+
+        fs2=Rs**2-Fm**2
+        IF(fs2.GT.ZERO)THEN
+         fs=SQRT(fs2)
+         Ps=0.5_SP*erfcc((fs-rm)/SQRT(2.0_SP))+0.5_SP*erfcc((fs+rm)/SQRT(2.0_SP))
+        ELSE
+         Ps=1.0_SP
+        ENDIF
+        
+        IF(Ps.GT.Pb)Ps=Pb
+
+! Vs
+        Gf=2.0_SP*SQRT(2.0_SP/pi)+(1.0_SP+us*us+vs*vs)*ABS(Fm)  &
+             +SQRT(2.0_SP/pi)*(us*us+vs*vs+2.0_SP*rm*rm)
+        Df(I,J)=RHO*(frc/2.0_SP)*sigma_t**3*Gf  
+
+        Vsus=(eB*(WaveDissSC(I,J)/RHO)+ef*(Df(i,j)/RHO))/grav/(S_sed-1.0_SP) &
+                 /MAX(SMALL,wf)*Ps  &
+            *SQRT(1.+SlopeX(I,J)**2)*SQRT(1.0_SP+SlopeY(I,J)**2)
+
+! Qsx Qsy
+         SusFluxX(I,J)=(a_k*Ubott(I,J)*cos_alpha*cos_alpha  &
+               + a_k*Vbott(I,J)*sin_alpha*cos_alpha  &
+               + Ubott(I,J)*sin_alpha*sin_alpha  &
+               - Vbott(I,J)*sin_alpha*cos_alpha  &
+                 )*Vsus
+
+         SusFluxY(I,J)=(a_k*Vbott(I,J)*sin_alpha*sin_alpha  &
+               + a_k*Ubott(I,J)*sin_alpha*cos_alpha  &
+               + Vbott(I,J)*cos_alpha*cos_alpha  &
+               - Ubott(I,J)*sin_alpha*cos_alpha  &
+                 )*Vsus
+
+        s1=-(Gm-1.0_SP)/Gm*TanPhi
+        s2=(Gm+1.0_SP)/(Gm+2.0_SP)*TanPhi
+        IF(SlopeX(I,J).LE.s1)Gs=Gm
+        IF(SlopeX(I,J).GT.s1.AND.SlopeX(I,J).LE.ZERO)  &
+        Gs=TanPhi/(SlopeX(I,J)+TanPhi)
+        IF(SlopeX(I,J).GT.ZERO.AND.SlopeX(I,J).LT.s2) &
+          Gs=(TanPhi-2.0_SP*SlopeX(I,J))/(TanPhi-SlopeX(I,J))
+        IF(SlopeX(I,J).GE.s2)Gs=-Gm
+
+         bed_cross_shore=b_k*Pb*sigma_t**3/grav/(S_sed-1.0_SP)*Gs  &
+                 *(1.0_SP+us*vs**2+2.0_SP*Fm  &
+                 *SIN((WaveAngleSC(I,J)-angle_x_beach)*DEG2RAD))
+
+        IF(SlopeY(I,J).LE.s1)Gs=Gm
+        IF(SlopeY(I,J).GT.s1.AND.SlopeY(I,J).LE.ZERO)  &
+          Gs=TanPhi/(SlopeY(I,J)+TanPhi)
+        IF(SlopeY(I,J).GT.ZERO.AND.SlopeY(I,J).LT.s2)  &
+          Gs=(TanPhi-2.0_SP*SlopeY(I,J))/(TanPhi-SlopeY(I,J))
+        IF(SlopeY(I,J).GE.s2)Gs=-Gm
+
+        bed_alongshore=b_k*Pb*sigma_t**3/grav/(S_sed-1)*Gs  &
+                 *(vs*(1.0_SP+us**2+vs**2)-2.0_SP*rm  &
+                 *SIN((WaveAngleSC(I,J)-angle_x_beach)*DEG2RAD)) 
+
+        BedFluxX(I,J) = bed_cross_shore*cos_alpha  &
+                        - bed_alongshore*sin_alpha
+        BedFluxY(I,J) = bed_cross_shore*sin_alpha  &
+                        + bed_alongshore*cos_alpha
+
+100     continue
+
+        SedFluxX=SusFluxX+BedFluxX
+        SedFluxY=SusFluxY+BedFluxY
+
+
+END SUBROUTINE KOBAYASHI_CSHORE
+
+       FUNCTION erfcc(x)
+       USE PARAM
+       IMPLICIT NONE
+       REAL(SP),INTENT(IN) ::x
+       REAL(SP) :: z,t,erfcc 
+       z=ABS(x)
+       t=1.0_SP/(1.0_SP+0.5_SP*z)
+       erfcc=t*EXP(-z*z-1.26551223_SP+t*(1.00002368_SP+t*(0.37409196_SP+ &
+         t*(0.09678418_SP+t*(-0.18628806_SP+t*(0.27886807_SP+t*(-1.13520398_SP+ &
+         t*(1.48851587_SP+t*(-0.82215223_SP+t*0.17087277_SP)))))))))
+       if(x.LT.ZERO) erfcc=2.0_SP-erfcc
+       return
+       end
+
+# endif
+
+# if defined (SEDIMENT)
+SUBROUTINE SEA_BED_CHANGE
+      USE SEDI
+      USE GLOBAL,ONLY : Mloc,Nloc,Depth,L11,L12,L22,Jaco,Mloc1,Nloc1,  &
+                        DepthX,DepthY,H,U,V,Ubar,Vbar,MinDepthFrc,&
+                        HU,HV,MASK,Eta,MinDepth,Ibeg,Iend,Jbeg,Jend,&
+                        MASK9
+
+      IMPLICIT NONE
+      REAL(SP),DIMENSION(Mloc,Nloc) :: Q1,Q2
+      REAL(SP),DIMENSION(Mloc1,Nloc) :: Q1L,Q1R,Q1c
+      REAL(SP),DIMENSION(Mloc,Nloc1) :: Q2L,Q2R,Q2c
+      REAL(SP),DIMENSION(Mloc,Nloc) :: DelxQ1
+      REAL(SP),DIMENSION(Mloc,Nloc) :: DelyQ2
+
+      DO J=1,Nloc
+      DO I=1,Mloc
+        Q1(I,J)=(SedFluxX(I,J)*L11(I,J)+SedFluxY(I,J)*L12(I,J))*Jaco(I,J)
+        Q2(I,J)=(SedFluxX(I,J)*L12(I,J)+SedFluxY(I,J)*L22(I,J))*Jaco(I,J)
+      ENDDO
+      ENDDO
+
+      CALL DelxFun(1.0_SP,Mloc,Nloc,Q1,DelxQ1)
+      CALL DelyFun(1.0_SP,Mloc,Nloc,Q2,DelyQ2)
+     
+      CALL CONSTRUCT_X(Mloc,Mloc1,Nloc,1.0_SP,Q1,DelxQ1,Q1L,Q1R)
+      CALL CONSTRUCT_Y(Mloc,Nloc,Nloc1,1.0_SP,Q2,DelyQ2,Q2L,Q2R)
+
+! average for now
+!      Q1c=0.5_SP*(Q1L+Q1R)
+!      Q2c=0.5_SP*(Q2L+Q2R)
+! upwinding
+       DO J=1,Nloc
+       DO I=1,Mloc
+        IF(Q1L(I,J).GE.ZERO) THEN
+          Q1c(I,J)=Q1L(I,J)
+        ELSE
+          Q1c(I,J)=Q1R(I,J)
+        ENDIF
+        IF(Q2R(I,J).LE.ZERO) THEN
+          Q2c(I,J)=Q2R(I,J)
+        ELSE
+          Q2c(I,J)=Q2L(I,J)
+        ENDIF        
+       ENDDO
+       ENDDO
+
+      DO J=2,Nloc-1
+      DO I=2,Mloc-1
+         IF(MASK(I,J)<ZERO)THEN
+           Q1c(I,J)=ZERO
+           Q1c(I+1,J)=ZERO
+           Q2c(I,J+1)=ZERO
+           Q2c(I,J)=ZERO
+         ENDIF
+      ENDDO
+      ENDDO
+
+      DO J=1,Nloc
+      DO I=1,Mloc
+        DepDt(I,J)=1.0_SP/MAX(SMALL,Jaco(I,J))*(Q1c(I+1,J)-Q1c(I,J)  &
+                               +Q2c(I,J+1)-Q2c(I,J))/(1.0_SP-por)
+        Depth(I,J)=Depth(I,J)+Factor_Morpho*DepDt(I,J)*DT_SED_REAL_INTV
+      ENDDO
+      ENDDO
+
+! exchange at ghost cells for parallel
+# if defined (PARALLEL)
+     CALL PHI_EXCH (Depth)
+# endif
+
+! update MASK
+     DO J=1,Nloc
+     DO I=1,Mloc
+      IF(Eta(I,J)<-DEPTH(I,J))THEN
+       MASK(I,J)=0
+       Eta(I,J)=MinDepth-Depth(I,J)
+      ELSE
+       MASK(I,J)=1
+      ENDIF
+     ENDDO
+     ENDDO
+
+     DO J=Jbeg,Jend
+     DO I=Ibeg,Iend
+      MASK9(I,J)=MASK(I,J)*MASK(I-1,J)*MASK(I+1,J)  &
+                *MASK(I+1,J+1)*MASK(I,J+1)*MASK(I-1,J+1) &
+                *MASK(I+1,J-1)*MASK(I,J-1)*MASK(I-1,J-1) 
+     ENDDO
+     ENDDO
+
+  
+! depth at interface
+     DO J=1,Nloc
+     DO I=2,Mloc
+      DepthX(I,J)=0.5_SP*(Depth(I-1,J)+Depth(I,J))
+     ENDDO
+     ENDDO
+     DO J=1,Nloc
+      DepthX(1,J)=0.5_SP*(3.0_SP*Depth(1,J)-Depth(2,J))
+      DepthX(Mloc1,J)=0.5_SP*(3.0_SP*Depth(Mloc,J)-Depth(Mloc-1,J))
+     ENDDO
+
+     DO J=2,Nloc
+     DO I=1,Mloc
+      DepthY(I,J)=0.5_SP*(Depth(I,J-1)+Depth(I,J))
+     ENDDO
+     ENDDO
+     DO I=1,Mloc
+      DepthY(I,1)=0.5_SP*(3.0_SP*Depth(I,1)-Depth(I,2))
+      DepthY(I,Nloc1)=0.5_SP*(3.0_SP*Depth(I,Nloc)-Depth(I,Nloc-1))
+     ENDDO
+
+! deal with masks
+
+!      DO J=2,Nloc-1
+!      DO I=2,Mloc-1
+!        IF(MASK(I,J)<ZERO)THEN
+!         DepthX(I,J)=Depth(I-1,J)
+!         DepthX(I+1,J)=Depth(I+1,J)
+!         DepthY(I,J)=Depth(I,J-1)
+!         DepthY(I,J+1)=Depth(I,J+1)
+!        ENDIF
+!      ENDDO
+!      ENDDO
+
+     goto 111 
+
+! warning!!! be careful here, don't update the following variables
+!     H=MAX(Eta+Depth,MinDepthFrc)
+!     HU=H*U
+!     HV=H*V  
+!     Ubar=HU
+!     Vbar=HV
+
+!     DO J=1,Nloc
+!     DO I=1,Mloc
+!      IF(Eta(I,J)<-DEPTH(I,J))THEN
+!       MASK(I,J)=0
+!       Eta(I,J)=MinDepth-Depth(I,J)
+!      ELSE
+!       MASK(I,J)=1
+!      ENDIF
+!     ENDDO
+!     ENDDO
+
+!     DO J=Jbeg,Jend
+!     DO I=Ibeg,Iend
+!      MASK9(I,J)=MASK(I,J)*MASK(I-1,J)*MASK(I+1,J)  &
+!                *MASK(I+1,J+1)*MASK(I,J+1)*MASK(I-1,J+1) &
+!                *MASK(I+1,J-1)*MASK(I,J-1)*MASK(I-1,J-1) 
+!     ENDDO
+!     ENDDO
+
+111   continue
+
+END SUBROUTINE SEA_BED_CHANGE
+# endif
+
+
+# if defined (SEDIMENT)
+SUBROUTINE SOULSBY_CURRENT_WAVE
+       USE SEDI
+       USE GLOBAL,ONLY : U,V,Mloc,Nloc,Depth,Mloc1,Nloc1, &
+                         L11,L12,L22,tmp4preview,MASK9
+       USE PASS,ONLY : WaveUbottSC
+       IMPLICIT NONE
+       REAL(SP) :: Asb,As,C_d,U_mod,U_cr,tt1
+      
+       IF(FIRST_CALL_SEDIMENT)THEN
+         FIRST_CALL_SEDIMENT = .FALSE.
+         IF(.NOT.ALLOCATED(SedFluxX))THEN
+             ALLOCATE(SedFluxX(Mloc,Nloc))
+             SedFluxX=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(SedFluxY))THEN
+             ALLOCATE(SedFluxY(Mloc,Nloc))
+             SedFluxY=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(SlopeX))THEN
+             ALLOCATE(SlopeX(Mloc,Nloc))
+             SlopeX=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(SlopeY))THEN
+             ALLOCATE(SlopeY(Mloc,Nloc))
+             SlopeY=ZERO
+         ENDIF
+         IF(.NOT.ALLOCATED(DepDt))THEN
+             ALLOCATE(DepDt(Mloc,Nloc))
+             DepDt=ZERO
+         ENDIF
+
+         Dst= D_50*(grav*(S_sed-1.0_SP)/nu_water**2)**(1.0_SP/3.0_SP)   !D_star
+         Ass= 0.012*D_50*Dst**(-0.6_SP)/(1.65_SP*grav*D_50)**1.2_SP
+        ENDIF
+
+         CALL CalculateSlope(Mloc,Nloc,Mloc1,Nloc1,&
+              Depth,L11,L12,L22,SlopeX,SlopeY)
+
+        DO J=1,Nloc
+        DO I=1,Mloc
+
+         Asb=0.005_SP*Depth(i,j)*(D_50/Depth(i,j))**1.2
+         As=Ass+Asb
+         C_d= (0.4_SP/(MAX(SMALL,LOG(MAX(SMALL,Depth(i,j)/z0)) &
+               -1.0_SP)))**2   !drag coefficient due to current alone
+
+          if (D_50.GE.0.0001_SP.AND.D_50.LE.0.0005_SP) &
+            U_cr=ABS(0.19_SP*D_50**0.1_SP*LOG10  &
+                  (MAX(SMALL,4.0_SP*Depth(i,j)/D_90)))
+          if (D_50.GE.0.0005_SP.AND.D_50.LE.0.002) &
+            U_cr=ABS(8.5_SP*D_50**0.6_SP*LOG10  &
+                  (MAX(SMALL,4.0_SP*Depth(i,j)/D_90)))
+               
+           U_mod=SQRT(U(i,j)**2+V(i,j)**2)
+
+! tan slope 
+           tanbeta=0.
+           if (U_mod.gt.0.) &
+           TanBeta=-(SlopeX(i,j)*U(i,j)+SlopeY(i,j)*V(i,j)) &
+                  /MAX(SMALL,U_mod) 
+
+           tt1=SQRT(U_mod**2+0.018_SP*WaveUbottSC(i,j)**2/MAX(SMALL,C_D))
+
+           IF (tt1.GE.U_cr) THEN
+             SedFluxX(I,J) = As*U(I,J)  &
+                *(tt1 - U_cr)**2.4_SP  &
+                *(1.0_SP-1.6_SP*TanBeta)
+
+              SedFluxY(I,J)=   &
+                As*V(I,J)  &
+                *(tt1 - U_cr)**2.4_SP   &
+                *(1.0_SP-1.6_SP*TanBeta)
+
+            ELSE
+               SedFluxX(I,J)=ZERO
+               SedFluxY(I,J)=ZERO
+            ENDIF
+
+!tmp4preview(i,j)=TanBeta
+
+        ENDDO
+        ENDDO
+
+!        SedFluxX=SedFluxX*MASK9
+!        SedFluxY=SedFluxY*MASK9
+
+END SUBROUTINE SOULSBY_CURRENT_WAVE
+# endif
+
+# if defined (SEDIMENT)
+SUBROUTINE CalculateSlope(Mloc,Nloc,Mloc1,Nloc1,&
+              Depth,L11,L12,L22,SlopeX,SlopeY)
+        USE PARAM
+        IMPLICIT NONE
+     
+        INTEGER,INTENT(IN) :: Mloc,Nloc,Mloc1,Nloc1
+        REAL(SP) :: DepthX(Mloc+1,Nloc),DepthY(Mloc,Nloc+1)
+        REAL(SP),INTENT(IN) :: Depth(Mloc,Nloc)
+        REAL(SP),INTENT(IN) :: L11(Mloc,Nloc),L22(Mloc,Nloc),L12(Mloc,Nloc)
+        REAL(SP),INTENT(OUT) :: SlopeX(Mloc,Nloc),SlopeY(Mloc,Nloc)
+        REAL(SP) :: TMPF1,TMPF2
+
+! re-construct Depth
+     DO J=1,Nloc
+     DO I=2,Mloc
+      DepthX(I,J)=0.5_SP*(Depth(I-1,J)+Depth(I,J))
+     ENDDO
+     ENDDO
+     DO J=1,Nloc
+      DepthX(1,J)=0.5_SP*(3.0_SP*Depth(1,J)-Depth(2,J))
+      DepthX(Mloc1,J)=0.5_SP*(3.0_SP*Depth(Mloc,J)-Depth(Mloc-1,J))
+     ENDDO
+
+     DO J=2,Nloc
+     DO I=1,Mloc
+      DepthY(I,J)=0.5_SP*(Depth(I,J-1)+Depth(I,J))
+     ENDDO
+     ENDDO
+     DO I=1,Mloc
+      DepthY(I,1)=0.5_SP*(3.0_SP*Depth(I,1)-Depth(I,2))
+      DepthY(I,Nloc1)=0.5_SP*(3.0_SP*Depth(I,Nloc)-Depth(I,Nloc-1))
+     ENDDO
+
+        DO J=1,Nloc
+        DO I=1,Mloc
+         TMPF1=DepthX(I+1,J)-DepthX(I,J)
+         TMPF2=DepthY(I,J+1)-DepthY(I,J)
+         SlopeX(I,J)=L11(I,J)*TMPF1+L12(I,J)*TMPF2
+         SlopeY(I,J)=L12(I,J)*TMPF1+L22(I,J)*TMPF2
+        ENDDO
+        ENDDO
+
+
+END SUBROUTINE CalculateSlope
+# endif
+
+
+
+
+
+

@@ -1,0 +1,1731 @@
+! ----------------------------------------------------
+!    This is subroutine to read input.txt
+!  called by 
+!        MAIN
+!    Last Update: 05/07/2010 Fengyan Shi, University of Delaware
+! --------------------------------------------------
+
+SUBROUTINE READ_INPUT
+    USE GLOBAL
+    USE Input_Util
+    USE PASS
+# if defined (TRACKING)
+    USE TRACER
+# endif
+# if defined (SEDIMENT)
+    USE SEDI
+# endif
+    IMPLICIT NONE
+    CHARACTER(LEN=80) FILE_NAME
+    INTEGER::LINE,I_tmp
+    INTEGER :: ierr
+    CHARACTER(LEN=80) :: WHAT
+
+# if defined (PARALLEL)
+    call MPI_COMM_RANK (MPI_COMM_WORLD, myid, ier)
+# endif
+
+      OPEN(3,FILE='LOG.txt')   
+
+! read everything from input.txt
+# if defined(ONLINE_RESIDUAL)
+      IF(myid==0)THEN
+        FILE_NAME='INPUT1'
+      ELSE
+        FILE_NAME='INPUT2'
+      ENDIF
+# else
+      FILE_NAME='INPUT'
+# endif
+
+! title
+      CALL GET_STRING_VAL(TITLE,FILE_NAME,'TITLE',line,ierr)
+      IF(ierr==1)THEN
+        !write(*,*) 'No TITLE in ', FILE_NAME, 'use default'
+        TITLE='---TEST RUN---'
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'---- LOG FILE ---'
+      if (myid.eq.0) WRITE(3,*)TITLE
+      if (myid.eq.0) WRITE(3,*)' --------------input start --------------'
+# else
+      WRITE(3,*)'---- LOG FILE ---'
+      WRITE(3,*)TITLE
+      WRITE(3,*)' --------------input start --------------'     
+# endif
+# if defined (PARALLEL)
+! parallel info
+      CALL GET_INTEGER_VAL(PX,FILE_NAME,'PX',line)
+      CALL GET_INTEGER_VAL(PY,FILE_NAME,'PY',line)       
+      if (myid.eq.0) WRITE(3,'(A7,I3,A7,I3)') 'PX   =',PX,'PY   =', PY
+# endif
+! wave-current interaction
+      CALL GET_LOGICAL_VAL(SWAN_RUN,FILE_NAME,'SWAN_RUN',line)
+      CALL GET_LOGICAL_VAL(SHORECIRC_RUN,FILE_NAME,'SHORECIRC_RUN',line)
+
+      CALL GET_INTEGER_VAL(WC_BOUND_WEST,FILE_NAME,'WC_BOUND_WEST',line)
+      CALL GET_INTEGER_VAL(WC_BOUND_EAST,FILE_NAME,'WC_BOUND_EAST',line)
+      CALL GET_INTEGER_VAL(WC_BOUND_SOUTH,FILE_NAME,'WC_BOUND_SOUTH',line)
+      CALL GET_INTEGER_VAL(WC_BOUND_NORTH,FILE_NAME,'WC_BOUND_NORTH',line)
+      CALL GET_Float_VAL(WC_LAG,FILE_NAME,'WC_LAG',line)  
+# if defined(ONED_IN_X)
+     WC_BOUND_SOUTH=0
+     WC_BOUND_NORTH=0
+# elif defined(ONED_IN_Y)
+     WC_BOUND_WEST=0
+     WC_BOUND_EAST=0
+# endif
+    
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A16,I4)') 'WC_BOUND_WEST=',WC_BOUND_WEST
+      if (myid.eq.0) WRITE(3,'(A16,I4)') 'WC_BOUND_EAST=',WC_BOUND_EAST
+      if (myid.eq.0) WRITE(3,'(A16,I4)') 'WC_BOUND_SOUTH=',WC_BOUND_SOUTH
+      if (myid.eq.0) WRITE(3,'(A16,I4)') 'WC_BOUND_NORTH=',WC_BOUND_NORTH
+      if (myid.eq.0) WRITE(3,'(A8,F12.3)') 'WC_LAG=',WC_LAG
+# else
+      WRITE(3,'(A16,I4)') 'WC_BOUND_WEST=',WC_BOUND_WEST
+      WRITE(3,'(A16,I4)') 'WC_BOUND_EAST=',WC_BOUND_EAST
+      WRITE(3,'(A16,I4)') 'WC_BOUND_SOUTH=',WC_BOUND_SOUTH
+      WRITE(3,'(A16,I4)') 'WC_BOUND_NORTH=',WC_BOUND_NORTH
+# endif
+
+! dimension
+      CALL GET_INTEGER_VAL(Mglob,FILE_NAME,'Mglob',line)
+      CALL GET_INTEGER_VAL(Nglob,FILE_NAME,'Nglob',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A7,I3,A7,I3)') 'Mglob=',Mglob,'Nglob=', Nglob
+# else
+      WRITE(3,'(A7,I3,A7,I3)') 'Mglob=',Mglob,'Nglob=', Nglob
+# endif
+
+! grid 
+
+# if defined (CURVILINEAR)
+        CALL GET_STRING_VAL(X_FILE,FILE_NAME,'X_FILE',line,ierr)
+        CALL GET_STRING_VAL(Y_FILE,FILE_NAME,'Y_FILE',line,ierr)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A9,A50)') 'X_FILE= ', X_FILE
+      if (myid.eq.0) WRITE(3,'(A9,A50)') 'Y_FILE= ', Y_FILE
+# else
+        WRITE(3,'(A9,A50)') 'X_FILE= ', X_FILE
+        WRITE(3,'(A9,A50)') 'Y_FILE= ', Y_FILE
+# endif  
+    
+# else 
+! rectangular
+      CALL GET_Float_VAL(DX,FILE_NAME,'DX',line)
+      CALL GET_Float_VAL(DY,FILE_NAME,'DY',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A4,F12.2,A4,F12.2)')'DX=',DX,'DY=',DY
+# else
+      WRITE(3,'(A4,F12.2,A4,F12.2)')'DX=',DX,'DY=',DY
+# endif
+# endif
+
+! coriolis
+      CALL GET_LOGICAL_VAL(CORI_CONSTANT,FILE_NAME,'CORI_CONSTANT',line)   
+     if (CORI_CONSTANT) then
+      CALL GET_Float_VAL(LATITUDE,FILE_NAME,'LATITUDE',line)
+     else
+        CALL GET_STRING_VAL(LATITUDE_FILE,FILE_NAME,'LATITUDE_FILE',line,ierr) 
+     endif
+
+! result folder
+      CALL GET_STRING_VAL(RESULT_FOLDER,FILE_NAME,'RESULT_FOLDER',line,ierr)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A15,A50)')'RESULT_FOLDER:', RESULT_FOLDER
+# else
+      WRITE(3,'(A15,A50)')'RESULT_FOLDER:', RESULT_FOLDER
+# endif
+! station files
+      CALL GET_INTEGER_VAL(NumberStations,FILE_NAME,'NumberStations',line)
+      IF(NumberStations>0)THEN
+      CALL GET_STRING_VAL(STATIONS_FILE,FILE_NAME,'STATIONS_FILE',line,ierr)
+      ENDIF
+! depth 
+      CALL GET_STRING_VAL(DEPTH_TYPE,FILE_NAME,'DEPTH_TYPE',line,ierr)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A12,A50)')'DEPTH_TYPE:', DEPTH_TYPE
+# else
+      WRITE(3,'(A12,A50)')'DEPTH_TYPE:', DEPTH_TYPE
+# endif
+      IF(DEPTH_TYPE(1:3)=='DAT')THEN
+        CALL GET_STRING_VAL(DEPTH_FILE,FILE_NAME,'DEPTH_FILE',line,ierr)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A12,A50)')'DEPTH_FILE:', DEPTH_FILE
+# else
+      WRITE(3,'(A12,A50)')'DEPTH_FILE:', DEPTH_FILE
+# endif
+      ENDIF
+      IF(DEPTH_TYPE(1:3)=='FLA')THEN
+      CALL GET_Float_VAL(DEPTH_FLAT,FILE_NAME,'DEPTH_FLAT',line) 
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'DEPTH_FLAT=', DEPTH_FLAT  
+# else
+      WRITE(3,'(A10,F12.2)')'DEPTH_FLAT=', DEPTH_FLAT 
+# endif
+      ENDIF
+      IF(DEPTH_TYPE(1:3)=='SLO')THEN
+      CALL GET_Float_VAL(DEPTH_FLAT,FILE_NAME,'DEPTH_FLAT',line) 
+      CALL GET_Float_VAL(SLP,FILE_NAME,'SLP',line) 
+      CALL GET_Float_VAL(Xslp,FILE_NAME,'Xslp',line) 
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'DEPTH_FLAT=', DEPTH_FLAT 
+      if (myid.eq.0) WRITE(3,'(A5,F12.2)')'SLP=', SLP
+      if (myid.eq.0) WRITE(3,'(A6,F12.2)')'Xslp=', Xslp  
+# else
+      WRITE(3,'(A10,F12.2)')'DEPTH_FLAT=', DEPTH_FLAT 
+      WRITE(3,'(A5,F12.2)')'SLP=', SLP
+      WRITE(3,'(A6,F12.2)')'Xslp=', Xslp  
+# endif
+      ENDIF
+! time
+      CALL GET_Float_VAL(PLOT_INTV,FILE_NAME,'PLOT_INTV',line)
+      CALL GET_Float_VAL(PLOT_INTV_STATION,FILE_NAME,'PLOT_INTV_STATION',line)
+      CALL GET_Float_VAL(SCREEN_INTV,FILE_NAME,'SCREEN_INTV',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A12,F12.2)')'PLOT_INTV= ', PLOT_INTV
+      if (myid.eq.0) WRITE(3,'(A13,F12.2)')'SCREEN_INTV=', SCREEN_INTV
+# else
+      WRITE(3,'(A12,F12.2)')'TOTAL_TIME=', TOTAL_TIME
+      WRITE(3,'(A12,F12.2)')'PLOT_INTV= ', PLOT_INTV
+      WRITE(3,'(A13,F12.2)')'SCREEN_INTV=', SCREEN_INTV
+      WRITE(3,'(A15,F12.2)')'HOTSTART_INTV=', HOTSTART_INTV
+# endif
+
+! stationary mode
+# if defined (STATIONARY)
+      CALL GET_INTEGER_VAL(N_ITERATION,FILE_NAME,'N_ITERATION',line)
+      CALL GET_STRING_VAL(WATER_LEVEL_FILE,FILE_NAME,'WATER_LEVEL_FILE',line,ierr)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A13,I3)') 'N_ITERATION=',N_ITERATION
+      if (myid.eq.0) WRITE(3,'(A19,A50)') 'WATER_LEVEL_FILE= ', WATER_LEVEL_FILE
+# else
+      WRITE(3,'(A13,I3)') 'N_ITERATION=',N_ITERATION
+      WRITE(3,'(A19,A50)') 'WATER_LEVEL_FILE= ', WATER_LEVEL_FILE
+# endif
+# endif 
+! end stationary
+
+! initial uvz
+      CALL GET_LOGICAL_VAL(INI_UVZ,FILE_NAME,'INI_UVZ',line)
+      IF(INI_UVZ)THEN
+        CALL GET_STRING_VAL(ETA_FILE,FILE_NAME,'ETA_FILE',line,ierr)
+        CALL GET_STRING_VAL(U_FILE,FILE_NAME,'U_FILE',line,ierr)
+        CALL GET_STRING_VAL(V_FILE,FILE_NAME,'V_FILE',line,ierr)
+       ENDIF
+! open boundary conditions
+      CALL GET_LOGICAL_VAL(ETA_CLAMPED,FILE_NAME,'ETA_CLAMPED',line)
+      IF(ETA_CLAMPED)THEN
+        CALL GET_STRING_VAL(TIDE_FILE,FILE_NAME,'TIDE_FILE',line,ierr)
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A12,A50)') 'TIDE_FILE= ', TIDE_FILE
+# else
+        WRITE(3,'(A12,A50)') 'TIDE_FILE= ', TIDE_FILE
+# endif
+! tidal flux
+      CALL GET_LOGICAL_VAL(FLUX_TIDE,FILE_NAME,'FLUX_TIDE',line)
+      IF(FLUX_TIDE)THEN
+        CALL GET_STRING_VAL(FLUX_TIDE_FILE,FILE_NAME,'FLUX_TIDE_FILE',line,ierr)
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A16,A50)') 'FLUX_TIDE_FILE=', FLUX_TIDE_FILE
+# else
+        WRITE(3,'(A16,A50)') 'FLUX_TIDE_FILE=', FLUX_TIDE_FILE
+# endif
+
+
+      CALL GET_LOGICAL_VAL(FLUX_CLAMPED,FILE_NAME,'FLUX_CLAMPED',line)
+      IF(FLUX_CLAMPED)THEN
+        CALL GET_STRING_VAL(FLUX_FILE,FILE_NAME,'FLUX_FILE',line,ierr)
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A12,A50)') 'FLUX_FILE= ', FLUX_FILE
+# else
+        WRITE(3,'(A12,A50)') 'FLUX_FILE= ', FLUX_FILE
+# endif
+! flux
+      CALL GET_LOGICAL_VAL(FLUX_CLAMPED,FILE_NAME,'FLUX_CLAMPED',line)
+      IF(FLUX_CLAMPED)THEN
+        CALL GET_STRING_VAL(FLUX_FILE,FILE_NAME,'FLUX_FILE',line,ierr)
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A12,A50)') 'FLUX_FILE= ', FLUX_FILE
+# else
+        WRITE(3,'(A12,A50)') 'FLUX_FILE= ', FLUX_FILE
+# endif
+
+      CALL GET_LOGICAL_VAL(WindForce,FILE_NAME,'WindForce',line)
+      IF(WindForce)THEN
+        CALL GET_STRING_VAL(WIND_FILE,FILE_NAME,'WIND_FILE',line,ierr)
+        CALL GET_Float_VAL(Cdw,FILE_NAME,'Cdw',line)
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A7,A50)')'Cdw = ', Cdw
+# else
+      WRITE(3,'(A7,A50)')'Cdw = ', Cdw
+# endif      
+
+! wavemaker
+      CALL GET_STRING_VAL(WaveMaker,FILE_NAME,'WAVEMAKER',line,ierr)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A11,A50)')'WAVEMAKER:', WAVEMAKER
+# else
+      WRITE(3,'(A11,A50)')'WAVEMAKER:', WAVEMAKER
+# endif
+        IF(WaveMaker(1:7)=='LEF_SOL')THEN
+          CALL GET_Float_VAL(AMP_SOLI,FILE_NAME,'AMP',line)
+          CALL GET_Float_VAL(DEP_SOLI,FILE_NAME,'DEP',line)
+          CALL GET_Float_VAL(LAG_SOLI,FILE_NAME,'LAGTIME',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'AMP_SOLI=', AMP_SOLI
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'DEP_SOLI=', DEP_SOLI
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'LAG_SOLI=', LAG_SOLI
+# else
+      WRITE(3,'(A10,F12.2)')'AMP_SOLI=', AMP_SOLI
+      WRITE(3,'(A10,F12.2)')'DEP_SOLI=', DEP_SOLI
+      WRITE(3,'(A10,F12.2)')'LAG_SOLI=', LAG_SOLI
+# endif
+        ENDIF
+
+        IF(WaveMaker(1:7)=='INI_SOL')THEN
+          CALL GET_Float_VAL(AMP_SOLI,FILE_NAME,'AMP',line)
+          CALL GET_Float_VAL(DEP_SOLI,FILE_NAME,'DEP',line)
+          CALL GET_Float_VAL(XWAVEMAKER,FILE_NAME,'XWAVEMAKER',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'AMP_SOLI=', AMP_SOLI
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'DEP_SOLI=', DEP_SOLI
+# else
+      WRITE(3,'(A10,F12.2)')'AMP_SOLI=', AMP_SOLI
+      WRITE(3,'(A10,F12.2)')'DEP_SOLI=', DEP_SOLI
+# endif
+        ENDIF
+        IF(WaveMaker(1:6)=='N_WAVE')THEN
+          CALL GET_Float_VAL(x1_Nwave,FILE_NAME,'x1_Nwave',line)
+          CALL GET_Float_VAL(x2_Nwave,FILE_NAME,'x2_Nwave',line)
+          CALL GET_Float_VAL(a0_Nwave,FILE_NAME,'a0_Nwave',line)
+          CALL GET_Float_VAL(gamma_Nwave,FILE_NAME,'gamma_Nwave',line)
+          CALL GET_Float_VAL(dep_Nwave,FILE_NAME,'dep_Nwave',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'x1_Nwave=', x1_Nwave
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'x2_Nwave=', x2_Nwave
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'a0_Nwave=', a0_Nwave
+      if (myid.eq.0) WRITE(3,'(A13,F12.2)')'gamma_Nwave=', gamma_Nwave
+      if (myid.eq.0) WRITE(3,'(A11,F12.2)')'dep_Nwave=', dep_Nwave
+# else
+      WRITE(3,'(A10,F12.2)')'x1_Nwave=', x1_Nwave
+      WRITE(3,'(A10,F12.2)')'x2_Nwave=', x2_Nwave
+      WRITE(3,'(A10,F12.2)')'a0_Nwave=', a0_Nwave
+      WRITE(3,'(A13,F12.2)')'gamma_Nwave=', gamma_Nwave
+      WRITE(3,'(A11,F12.2)')'dep_Nwave=', dep_Nwave
+# endif
+        ENDIF
+
+        IF(WaveMaker(1:7)=='INI_REC')THEN
+          CALL GET_Float_VAL(AMP_SOLI,FILE_NAME,'AMP',line)
+          CALL GET_Float_VAL(Xc,FILE_NAME,'Xc',line)
+          CALL GET_Float_VAL(Yc,FILE_NAME,'Yc',line)
+          CALL GET_Float_VAL(WID,FILE_NAME,'WID',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'AMP     =', AMP_SOLI
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'Xc      =', Xc
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'Yc      =', Yc
+      if (myid.eq.0) WRITE(3,'(A10,F12.2)')'WID     =', WID
+# else
+      WRITE(3,'(A10,F12.2)')'AMP     =', AMP_SOLI
+      WRITE(3,'(A10,F12.2)')'Xc      =', Xc
+      WRITE(3,'(A10,F12.2)')'Yc      =', Yc
+      WRITE(3,'(A10,F12.2)')'WID     =', WID
+# endif
+        ENDIF
+
+! periodic boundary condition
+      CALL GET_LOGICAL_VAL(PERIODIC_X,FILE_NAME,'PERIODIC_X',line)
+      CALL GET_LOGICAL_VAL(PERIODIC_Y,FILE_NAME,'PERIODIC_Y',line)
+      CALL GET_INTEGER_VAL(Num_Transit,FILE_NAME,'Num_Transit',line)
+
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A13,A50)')'PERIODIC_X:', PERIODIC_X
+      if (myid.eq.0) WRITE(3,'(A13,A50)')'PERIODIC_Y:', PERIODIC_Y
+      if (myid.eq.0) WRITE(3,'(A15,I4)')'Num_Transit:', Num_Transit
+# else
+      WRITE(3,'(A13,A50)')'PERIODIC_X:', PERIODIC_X
+      WRITE(3,'(A13,A50)')'PERIODIC_Y:', PERIODIC_Y
+      WRITE(3,'(A15,I4)')'Num_Transit:', Num_Transit
+# endif
+
+! sponge layer
+      CALL GET_LOGICAL_VAL(SPONGE_ON,FILE_NAME,'SPONGE_ON',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A11,A50)')'SPONGE_ON:', SPONGE_ON
+# else
+      WRITE(3,'(A11,A50)')'SPONGE_ON:', SPONGE_ON
+# endif
+      IF(SPONGE_ON)THEN
+        CALL GET_Float_VAL(Sponge_west_width,FILE_NAME,'Sponge_west_width',line)
+        CALL GET_Float_VAL(Sponge_east_width,FILE_NAME,'Sponge_east_width',line)
+        CALL GET_Float_VAL(Sponge_south_width,FILE_NAME,'Sponge_south_width',line)
+        CALL GET_Float_VAL(Sponge_north_width,FILE_NAME,'Sponge_north_width',line)
+        CALL GET_Float_VAL(R_sponge,FILE_NAME,'R_sponge',line)
+        CALL GET_Float_VAL(A_sponge,FILE_NAME,'A_sponge',line)
+# if defined (PARALLEL)
+        if (myid.eq.0) WRITE(3,'(A20,F12.2)')'Sponge_west_width =', Sponge_west_width
+        if (myid.eq.0) WRITE(3,'(A20,F12.2)')'Sponge_east_width =', Sponge_east_width
+        if (myid.eq.0) WRITE(3,'(A20,F12.2)')'Sponge_south_width=', Sponge_south_width
+        if (myid.eq.0) WRITE(3,'(A20,F12.2)')'Sponge_north_width=', Sponge_north_width
+        if (myid.eq.0) WRITE(3,'(A20,F12.2)')'R_sponge          =', R_sponge
+        if (myid.eq.0) WRITE(3,'(A20,F12.2)')'A_sponge          =', A_sponge
+# else
+        WRITE(3,'(A20,F12.2)')'Sponge_west_width =', Sponge_west_width
+        WRITE(3,'(A20,F12.2)')'Sponge_east_width =', Sponge_east_width
+        WRITE(3,'(A20,F12.2)')'Sponge_south_width=', Sponge_south_width
+        WRITE(3,'(A20,F12.2)')'Sponge_north_width=', Sponge_north_width
+        WRITE(3,'(A20,F12.2)')'R_sponge          =', R_sponge
+        WRITE(3,'(A20,F12.2)')'A_sponge          =', A_sponge
+# endif
+      ENDIF
+
+! obstacle structures
+      CALL GET_STRING_VAL(OBSTACLE_FILE,FILE_NAME,'OBSTACLE_FILE',line,ierr)
+      IF(ierr==1)THEN
+        OBSTACLE=.FALSE.
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A15,A5)')'OBSTACLE_FILE:', 'NO'
+# else
+      WRITE(3,'(A15,A5)')'OBSTACLE_FILE:', 'NO'
+# endif
+      ELSE
+        OBSTACLE=.TRUE.
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A15,A50)')'OBSTACLE_FILE:', OBSTACLE_FILE
+# else
+      WRITE(3,'(A15,A50)')'OBSTACLE_FILE:', OBSTACLE_FILE
+# endif
+      ENDIF
+
+! physics
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A8)')'Physics'
+# else
+      WRITE(3,'(A8)')'Physics'
+# endif
+      CALL GET_Float_VAL(Cd,FILE_NAME,'Cd',line)
+      CALL GET_Float_VAL(Manning,FILE_NAME,'Manning',line)
+      CALL GET_Float_VAL(nu_bkgd,FILE_NAME,'nu_bkgd',line)
+
+      CALL GET_LOGICAL_VAL(FRC_MANNING_DATA,FILE_NAME,'FRC_MANNING_DATA',line)
+      IF(FRC_MANNING_DATA)THEN
+        CALL GET_STRING_VAL(FRC_FILE,FILE_NAME,'FRC_FILE',line,ierr)
+      ENDIF
+
+# if defined (PARALLEL)
+       if (myid.eq.0) WRITE(3,'(A13,F12.2)')'Cd         =', Cd
+       if (myid.eq.0) WRITE(3,'(A13,F12.2)')'Manning    =', Manning
+       if (myid.eq.0) WRITE(3,'(A13,F12.2)')'nu_bkgd    =', nu_bkgd
+# else
+       WRITE(3,'(A13,F12.2)')'Cd         =', Cd
+       WRITE(3,'(A13,F12.2)')'Manning    =', Manning
+       WRITE(3,'(A13,F12.2)')'nu_bkgd    =', nu_bkgd
+# endif
+! numerics schemes
+      CALL GET_STRING_VAL(Time_Scheme,FILE_NAME,'Time_Scheme',line,ierr)
+      IF(ierr==1)THEN
+        !write(*,*) 'Please define Time_Scheme in ', FILE_NAME
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A13,A50)')'TIME_SCHEME:', 'NOT DEFINED, STOP'
+# else
+      WRITE(3,'(A13,A50)')'TIME_SCHEME:', 'NOT DEFINED, STOP'
+# endif
+        STOP
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A13,A50)')'TIME_SCHEME:', TIME_SCHEME
+# else
+      WRITE(3,'(A13,A50)')'TIME_SCHEME:', TIME_SCHEME
+# endif
+      CALL GET_STRING_VAL(CONSTR,FILE_NAME,'CONSTRUCTION',line,ierr)
+      IF(ierr==1)THEN
+        !write(*,*) 'No definition of CONSTRUCTION in ', FILE_NAME, 'use default'
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A14,A50)')'CONSTRUCTION', 'NOT DEFINED, USE DEFAULT'
+# else
+      WRITE(3,'(A14,A50)')'CONSTRUCTION', 'NOT DEFINED, USE DEFAULT'
+# endif
+        CONSTR='HLLC'
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A14,A50)')'CONSTRUCTION:', CONSTR
+# else
+      WRITE(3,'(A14,A50)')'CONSTRUCTION:', CONSTR
+# endif
+      CALL GET_STRING_VAL(HIGH_ORDER,FILE_NAME,'HIGH_ORDER',line,ierr)
+      IF(ierr==1)THEN
+        !write(*,*) 'No definition of HIGH_ORDER in ', FILE_NAME, 'use default'
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A12,A50)')'HIGH_ORDER', 'NOT DEFINED, USE DEFAULT'
+# else
+      WRITE(3,'(A12,A50)')'HIGH_ORDER', 'NOT DEFINED, USE DEFAULT'
+# endif
+        HIGH_ORDER='FOURTH'        
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A12,A50)')'HIGH_ORDER:', HIGH_ORDER
+# else
+      WRITE(3,'(A12,A50)')'HIGH_ORDER:', HIGH_ORDER
+# endif
+! CFL
+      CALL GET_Float_VAL(CFL,FILE_NAME,'CFL',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A5,F12.2)')'CFL=', CFL
+# else
+      WRITE(3,'(A5,F12.2)')'CFL=', CFL
+# endif
+! Froude Number Cap
+      CALL GET_Float_VAL(FroudeCap,FILE_NAME,'FroudeCap',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A5,F12.2)')'FroudeCap=', FroudeCap
+# else
+      WRITE(3,'(A5,F12.2)')'FroudeCap=', FroudeCap
+# endif
+! MinDepth etc
+      CALL GET_Float_VAL(MinDepth,FILE_NAME,'MinDepth',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A10,F12.6)')'MinDepth=', MinDepth
+# else
+      WRITE(3,'(A10,F12.6)')'MinDepth=', MinDepth
+# endif
+      CALL GET_Float_VAL(MinDepthFrc,FILE_NAME,'MinDepthFrc',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A13,F12.2)')'MinDepthFrc=', MinDepthFrc
+# else
+      WRITE(3,'(A13,F12.2)')'MinDepthFrc=', MinDepthFrc
+# endif
+
+# if defined (RESIDUAL)
+      CALL GET_Float_VAL(T_INTV_mean,FILE_NAME,'T_INTV_mean',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A14,F12.6)')'T_INTV_mean =', T_INTV_mean
+# else
+      WRITE(3,'(A14,F12.6)')'T_INTV_mean =', T_INTV_mean
+# endif
+# endif
+
+# if defined (TRACKING)
+      CALL GET_STRING_VAL(TRACER_FILE,FILE_NAME,'TRACER_FILE',line,ierr)
+      OPEN(1,FILE=TRIM(TRACER_FILE))
+        READ(1,*)WHAT
+        READ(1,*)NumTracker
+        READ(1,*)TrackerInterval
+
+       ALLOCATE(X_TRACK(NumTracker), &
+                Y_TRACK(NumTracker),TRACKER_START(NumTracker), &
+                LAYER_012(NumTracker) )
+
+        DO I_tmp=1,NumTracker
+           READ(1,*)X_TRACK(I_tmp),Y_TRACK(I_tmp),TRACKER_START(I_tmp),&
+               LAYER_012(I_tmp)
+        ENDDO
+      CLOSE(1)
+# endif
+
+# if defined(SEDIMENT)
+      CALL GET_Float_VAL(T_INTV_sed,FILE_NAME,'T_INTV_sed',line)
+      CALL GET_Float_VAL(Factor_Morpho,FILE_NAME,'Factor_Morpho',line)
+      CALL GET_Float_VAL(nu_water,FILE_NAME,'nu_water',line)
+      CALL GET_Float_VAL(D_50,FILE_NAME,'D_50',line)
+      CALL GET_Float_VAL(D_90,FILE_NAME,'D_90',line)
+      CALL GET_Float_VAL(por,FILE_NAME,'por',line)
+      CALL GET_Float_VAL(S_sed,FILE_NAME,'S_sed',line)
+# if defined (MULTISIZE)
+      CALL GET_STRING_VAL(SEDIMENT_SIZE_FILE,FILE_NAME,'SEDIMENT_SIZE_FILE',line,ierr)      
+# endif 
+! end multi-grain-size
+
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A13,F12.6)')'T_INTV_sed =', T_INTV_sed
+      if (myid.eq.0) WRITE(3,'(A16,F12.6)')'Factor_Morpho =', Factor_Morpho
+      if (myid.eq.0) WRITE(3,'(A13,F12.6)')'nu_water =', nu_water
+      if (myid.eq.0) WRITE(3,'(A7,F12.6)')'D_50 =', D_50
+      if (myid.eq.0) WRITE(3,'(A7,F12.6)')'D_90 =', D_90
+      if (myid.eq.0) WRITE(3,'(A8,F12.6)')'S_sed =', S_sed
+      if (myid.eq.0) WRITE(3,'(A6,F12.6)')'por =', por
+# else
+      WRITE(3,'(A13,F12.6)')'T_INTV_sed =', T_INTV_sed
+      WRITE(3,'(A16,F12.6)')'Factor_Morpho =', Factor_Morpho
+      WRITE(3,'(A13,F12.6)')'nu_water =', nu_water
+      WRITE(3,'(A7,F12.6)')'D_50 =', D_50
+      WRITE(3,'(A7,F12.6)')'D_90 =', D_90
+      WRITE(3,'(A8,F12.6)')'S_sed =', S_sed
+      WRITE(3,'(A6,F12.6)')'por =', por
+# endif
+
+# if defined (SEDIMENT)
+! bed interation
+      CALL GET_INTEGER_VAL(BED_BOUND_WEST,FILE_NAME,'BED_BOUND_WEST',line)
+      CALL GET_INTEGER_VAL(BED_BOUND_EAST,FILE_NAME,'BED_BOUND_EAST',line)
+      CALL GET_INTEGER_VAL(BED_BOUND_SOUTH,FILE_NAME,'BED_BOUND_SOUTH',line)
+      CALL GET_INTEGER_VAL(BED_BOUND_NORTH,FILE_NAME,'BED_BOUND_NORTH',line)
+      CALL GET_Float_VAL(BED_LAG,FILE_NAME,'BED_LAG',line)      
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A16,I4)') 'BED_BOUND_WEST=',BED_BOUND_WEST
+      if (myid.eq.0) WRITE(3,'(A16,I4)') 'BED_BOUND_EAST=',BED_BOUND_EAST
+      if (myid.eq.0) WRITE(3,'(A16,I4)') 'BED_BOUND_SOUTH=',BED_BOUND_SOUTH
+      if (myid.eq.0) WRITE(3,'(A16,I4)') 'BED_BOUND_NORTH=',BED_BOUND_NORTH
+      if (myid.eq.0) WRITE(3,'(A8,F12.3)') 'BED_LAG=',BED_LAG
+# else
+      WRITE(3,'(A16,I4)') 'BED_BOUND_WEST=',BED_BOUND_WEST
+      WRITE(3,'(A16,I4)') 'BED_BOUND_EAST=',BED_BOUND_EAST
+      WRITE(3,'(A16,I4)') 'BED_BOUND_SOUTH=',BED_BOUND_SOUTH
+      WRITE(3,'(A16,I4)') 'BED_BOUND_NORTH=',BED_BOUND_NORTH
+      WRITE(3,'(A8,F12.3)') 'BED_LAG=',BED_LAG
+# endif
+# endif 
+! end sediment
+      CALL GET_LOGICAL_VAL(SOULSBY,FILE_NAME,'SOULSBY',line)
+      IF(SOULSBY)THEN
+        CALL GET_Float_VAL(z0,FILE_NAME,'z0',line)
+        CALL GET_Float_VAL(SlopeParameter,FILE_NAME,'SlopeParameter',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A6,F12.6)')'z0 =', z0
+      if (myid.eq.0) WRITE(3,'(A17,F12.6)')'SlopeParameter =', SlopeParameter
+# else
+       WRITE(3,'(A6,F12.6)')'z0 =', z0
+       WRITE(3,'(A17,F12.6)')'SlopeParameter =', SlopeParameter
+# endif
+      CALL GET_LOGICAL_VAL(VanRjin_wave_effect,FILE_NAME,'VanRjin_wave_effect',line)
+      ENDIF
+
+      CALL GET_LOGICAL_VAL(VANRJIN1991,FILE_NAME,'VANRJIN1991',line)
+      IF(VANRJIN1991)THEN
+        CALL GET_Float_VAL(z0,FILE_NAME,'z0',line)
+        CALL GET_Float_VAL(SlopeParameter,FILE_NAME,'SlopeParameter',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A6,F12.6)')'z0 =', z0
+      if (myid.eq.0) WRITE(3,'(A17,F12.6)')'SlopeParameter =', SlopeParameter
+# else
+       WRITE(3,'(A6,F12.6)')'z0 =', z0
+       WRITE(3,'(A17,F12.6)')'SlopeParameter =', SlopeParameter
+# endif
+      ENDIF
+
+      CALL GET_LOGICAL_VAL(KOBAYASHI,FILE_NAME,'KOBAYASHI',line)
+      IF(KOBAYASHI)THEN
+        CALL GET_Float_VAL(angle_x_beach,FILE_NAME,'angle_x_beach',line)
+        CALL GET_Float_VAL(eB,FILE_NAME,'eB',line)
+        CALL GET_Float_VAL(ef,FILE_NAME,'ef',line)
+        CALL GET_Float_VAL(a_k,FILE_NAME,'a_k',line)
+        CALL GET_Float_VAL(b_k,FILE_NAME,'b_k',line)
+        CALL GET_Float_VAL(TanPhi,FILE_NAME,'TanPhi',line)
+        CALL GET_Float_VAL(Gm,FILE_NAME,'Gm',line)
+        CALL GET_Float_VAL(frc,FILE_NAME,'frc',line)
+        CALL GET_Float_VAL(Si_c,FILE_NAME,'Si_c',line)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A13,F12.6)')'beach angle=', angle_x_beach
+      if (myid.eq.0) WRITE(3,'(A6,F12.6)')'eB =', eB
+      if (myid.eq.0) WRITE(3,'(A6,F12.6)')'ef =', ef
+      if (myid.eq.0) WRITE(3,'(A7,F12.6)')'a_k =', a_k
+      if (myid.eq.0) WRITE(3,'(A7,F12.6)')'b_k =', b_k
+      if (myid.eq.0) WRITE(3,'(A9,F12.6)')'TanPhi =', TanPhi
+      if (myid.eq.0) WRITE(3,'(A6,F12.6)')'Gm =', Gm
+      if (myid.eq.0) WRITE(3,'(A7,F12.6)')'frc =', frc
+      if (myid.eq.0) WRITE(3,'(A8,F12.6)')'Si_c =', Si_c
+# else
+      WRITE(3,'(A13,F12.6)')'beach angle=', angle_x_beach
+      WRITE(3,'(A6,F12.6)')'eB =', eB
+      WRITE(3,'(A6,F12.6)')'ef =', ef
+      WRITE(3,'(A7,F12.6)')'a_k =', a_k
+      WRITE(3,'(A7,F12.6)')'b_k =', b_k
+      WRITE(3,'(A9,F12.6)')'TanPhi =', TanPhi
+      WRITE(3,'(A6,F12.6)')'Gm =', Gm
+      WRITE(3,'(A7,F12.6)')'frc =', frc
+      WRITE(3,'(A8,F12.6)')'Si_c =', Si_c
+# endif
+
+      ENDIF
+
+      IF(KOBAYASHI.AND.SOULSBY.OR.KOBAYASHI.AND.VANRJIN1991.OR.&
+         VANRJIN1991.AND.SOULSBY)THEN
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*) 'PLEASE SET ONE SEDIMENT FORMULA ONLY'
+      if (myid.eq.0) WRITE(3,*) 'STOP'
+      if (myid.eq.0) WRITE(*,*) 'PLEASE SET ONE SEDIMENT FORMULA ONLY'
+      if (myid.eq.0) WRITE(*,*) 'STOP'
+      CALL SWEXITMPI 
+# else
+      WRITE(3,*) 'PLEASE SET ONE SEDIMENT FORMULA ONLY'
+      WRITE(3,*) 'STOP'
+      WRITE(*,*) 'PLEASE SET ONE SEDIMENT FORMULA ONLY'
+      WRITE(*,*) 'STOP'
+      STOP
+# endif              
+      ENDIF
+
+# if defined (CYCLEUPDATE)
+      CALL GET_Float_VAL(T_INTV_CYCLE,FILE_NAME,'T_INTV_CYCLE',line)
+# endif
+
+# if defined (ONLINE)
+      CALL GET_Float_VAL(T_INTV_CYCLE,FILE_NAME,'T_INTV_CYCLE',line)
+# endif
+
+# endif 
+! end of sediment
+
+# if defined (COUPLING)
+      CALL GET_STRING_VAL(COUPLING_FILE,FILE_NAME,'COUPLING_FILE',line,ierr)
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A15,A50)')'COUPLING_FILE:', COUPLING_FILE
+# else
+      WRITE(3,'(A15,A50)')'COUPLING_FILE:', COUPLING_FILE
+# endif
+# endif
+
+! output parameters
+      CALL GET_LOGICAL_VAL(OUT_DEPTH,FILE_NAME,'DEPTH_OUT',line)
+      CALL GET_LOGICAL_VAL(OUT_U,FILE_NAME,'U',line)
+      CALL GET_LOGICAL_VAL(OUT_V,FILE_NAME,'V',line)
+      CALL GET_LOGICAL_VAL(OUT_ETA,FILE_NAME,'ETA',line)
+      CALL GET_LOGICAL_VAL(OUT_HS,FILE_NAME,'HS',line)
+      CALL GET_LOGICAL_VAL(OUT_MASK,FILE_NAME,'MASK',line)
+      CALL GET_LOGICAL_VAL(OUT_SourceX,FILE_NAME,'SourceX',line)
+      CALL GET_LOGICAL_VAL(OUT_SourceY,FILE_NAME,'SourceY',line)
+      CALL GET_LOGICAL_VAL(OUT_TMP,FILE_NAME,'TMP',line)
+      CALL GET_LOGICAL_VAL(OUT_Per,FILE_NAME,'PER',line)
+      CALL GET_LOGICAL_VAL(OUT_WDIR,FILE_NAME,'WDIR',line)
+      CALL GET_LOGICAL_VAL(OUT_Wdis,FILE_NAME,'Wdis',line)
+      CALL GET_LOGICAL_VAL(OUT_WBV,FILE_NAME,'WBV',line)
+      CALL GET_LOGICAL_VAL(OUT_WFC,FILE_NAME,'WFC',line)
+      CALL GET_LOGICAL_VAL(OUT_3D,FILE_NAME,'UV3D',line)
+      CALL GET_LOGICAL_VAL(OUT_Qw,FILE_NAME,'Qstk',line)
+# if defined (SEDIMENT)
+      CALL GET_LOGICAL_VAL(OUT_Qsed,FILE_NAME,'Qsed',line)
+      CALL GET_LOGICAL_VAL(OUT_DepDt,FILE_NAME,'DepDt',line)
+# if defined (SUSPENDED_LOAD)
+      CALL GET_LOGICAL_VAL(OUT_ConSed,FILE_NAME,'ConSed',line)
+# endif
+# endif
+# if defined (DYE)
+      CALL GET_LOGICAL_VAL(OUT_ConDye,FILE_NAME,'ConDye',line)
+# endif
+# if defined (RESIDUAL)
+      CALL GET_LOGICAL_VAL(OUT_Umean,FILE_NAME,'Umean',line)
+      CALL GET_LOGICAL_VAL(OUT_Vmean,FILE_NAME,'Vmean',line)
+      CALL GET_LOGICAL_VAL(OUT_ETAmean,FILE_NAME,'ETAmean',line)
+# endif
+
+! 
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)' --------------input end --------------' 
+# else
+      WRITE(3,*)' --------------input end --------------' 
+# endif
+
+END SUBROUTINE READ_INPUT
+
+! -------------
+!    Writes station data
+! Fengyan Shi modified based on Jeff Harris' for Spherical
+! here simply specify grid number i and j instead of x and y
+! 04/14/2011
+! -------------
+SUBROUTINE STATIONS
+     USE GLOBAL
+     USE PASS
+     IMPLICIT NONE
+
+     INTEGER :: iunit
+     REAL(SP) :: dum1,dum2
+     CHARACTER(LEN=80)::FILE_NAME=''
+     CHARACTER(LEN=80)::TMP_NAME=''
+     CHARACTER(LEN=80)::FDIR=''
+
+! initialize stations
+     FDIR=TRIM(RESULT_FOLDER)
+     if (icount.eq.0) then
+       ALLOCATE(ista(NumberStations),&
+                jsta(NumberStations),&
+                nsta(NumberStations))
+! calculate how many output components
+              
+       open(100,FILE=TRIM(STATIONS_FILE))
+       do i=1,NumberStations
+          read(100,*) dum1,dum2
+# if defined (PARALLEL)
+# if defined (ONLINE)
+          nsta(i)=0
+       if (myid.eq.0)then
+          ista(i) = Nghost+dum1
+          jsta(i) = Nghost+dum2
+          if ((ista(i).ge.Ibeg).and.(ista(i).le.Iend).and.&
+              (jsta(i).ge.Jbeg).and.(jsta(i).le.Jend)) then
+             nsta(i) = 1
+             write(file_name(1:4),'(I4.4)') i
+             TMP_NAME = TRIM(FDIR)//'sta_'//TRIM(FILE_NAME)
+             iunit=100+i
+             open(iunit,FILE=TMP_NAME)
+          else
+             nsta(i) = 0
+          endif
+       endif ! myid=0
+# else 
+! not online
+
+          ista(i) = Nghost+dum1-npx*Mglob/px
+          jsta(i) = Nghost+dum2-npy*Nglob/py
+          if ((ista(i).ge.Ibeg).and.(ista(i).le.Iend).and.&
+              (jsta(i).ge.Jbeg).and.(jsta(i).le.Jend)) then
+             nsta(i) = 1
+             write(file_name(1:4),'(I4.4)') i
+             TMP_NAME = TRIM(FDIR)//'sta_'//TRIM(FILE_NAME)
+             iunit=100+i
+             open(iunit,FILE=TMP_NAME)
+          else
+             nsta(i) = 0
+          endif
+# endif  
+! end online
+
+# else
+          ista(i) = Nghost+dum1
+          jsta(i) = Nghost+dum2
+          if ((ista(i).ge.Ibeg).and.(ista(i).le.Iend).and.&
+              (jsta(i).ge.Jbeg).and.(jsta(i).le.Jend)) then
+             nsta(i) = 1
+             write(file_name(1:4),'(I4.4)') i
+             TMP_NAME = TRIM(FDIR)//'sta_'//TRIM(FILE_NAME)
+             iunit=100+i
+             open(iunit,FILE=TMP_NAME)
+          else
+             nsta(i) = 0
+          endif
+# endif
+       enddo
+     endif
+
+! write to stations
+
+     do i=1,NumberStations
+       if (nsta(i).eq.1) then
+          iunit=100+i
+          write (iunit,'(20E20.6)') time, eta(ista(i),jsta(i)),&
+                          u(ista(i),jsta(i)),v(ista(i),jsta(i)),&
+                          depth(ista(i),jsta(i))
+       endif
+     enddo
+
+! close station files
+     if (TIME.ge.TOTAL_TIME) then
+       do i=1,NumberStations
+          if (nsta(i).eq.1) then
+             iunit=100+i
+             close(iunit)
+          endif
+       enddo
+     endif
+
+END SUBROUTINE STATIONS
+
+! ----------------------------------------------------
+!    This is subroutine for preview
+!  called by 
+!        MAIN
+!    Last Update: 05/06/2010 Fengyan Shi, University of Delaware
+! --------------------------------------------------
+SUBROUTINE PREVIEW
+     USE GLOBAL
+     USE PASS
+# if defined (SEDIMENT)
+     USE SEDI
+# endif
+     IMPLICIT NONE
+
+     CHARACTER(LEN=80)::FILE_NAME=''
+     CHARACTER(LEN=80)::TMP_NAME=''
+     CHARACTER(LEN=80)::FDIR=''
+     INTEGER :: numprint,VTYPE
+
+     FDIR=TRIM(RESULT_FOLDER)
+
+     ICOUNT=ICOUNT+1
+
+# if defined (PARALLEL)
+        if (myid.eq.0)then
+        WRITE(3,102)'PRINTING FILE NO.', icount, ' TIME/TOTAL: ', TIME,'/',Total_Time
+        WRITE(*,102)'PRINTING FILE NO.', icount, ' TIME/TOTAL: ', TIME,'/',Total_Time        
+        endif
+# else
+        WRITE(*,102)'PRINTING FILE NO.', icount, ' TIME/TOTAL: ', TIME,'/',Total_Time
+# endif
+102     FORMAT(A20,I4,A14,F12.3,A2,F12.3)
+
+# if defined (ONLINE)
+      IF(myid.eq.0)then
+# endif
+
+        numprint=icount          !    +myid*1000
+        itmp1=mod(numprint/1000,10)
+        itmp2=mod(numprint/100,10)
+        itmp3=mod(numprint/10,10)
+        itmp4=mod(numprint,10)
+
+# if defined(ONLINE_RESIDUAL)
+      IF(myid==0)THEN
+        write(*,*)'printing case1, icount=',icount
+        write(file_name(1:6),'(A6)')'case1_'
+        write(file_name(7:7),'(I1)')itmp1
+        write(file_name(8:8),'(I1)')itmp2
+        write(file_name(9:9),'(I1)')itmp3
+        write(file_name(10:10),'(I1)')itmp4
+      ELSE
+        write(*,*)'printing case2, icount=',icount
+        write(file_name(1:6),'(A6)')'case2_'
+        write(file_name(7:7),'(I1)')itmp1
+        write(file_name(8:8),'(I1)')itmp2
+        write(file_name(9:9),'(I1)')itmp3
+        write(file_name(10:10),'(I1)')itmp4
+      ENDIF
+# else
+        write(file_name(1:1),'(I1)')itmp1
+        write(file_name(2:2),'(I1)')itmp2
+        write(file_name(3:3),'(I1)')itmp3
+        write(file_name(4:4),'(I1)')itmp4
+# endif
+
+     IF(OUT_DEPTH)THEN
+        TMP_NAME = TRIM(FDIR)//'dep_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,DEPTH)
+     ENDIF
+
+
+   IF(SHORECIRC_RUN)THEN
+
+     IF(OUT_ETA)THEN
+        TMP_NAME = TRIM(FDIR)//'eta_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,Eta)
+     ENDIF
+
+     IF(OUT_U)THEN
+        TMP_NAME = TRIM(FDIR)//'u_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,U)
+        TMP_NAME = TRIM(FDIR)//'us_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,Usurf)
+        TMP_NAME = TRIM(FDIR)//'ub_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,Ubott)
+# if defined (CURVILINEAR)
+        TMP_NAME = TRIM(FDIR)//'un_'//TRIM(FILE_NAME)
+        Int2Flo=0.5_SP*(UnL(1:Mloc,1:Nloc)+UnR(1:Mloc,1:Nloc))
+        call PutFile(TMP_NAME,Int2flo)
+# endif
+     ENDIF
+
+     IF(OUT_V)THEN
+        TMP_NAME = TRIM(FDIR)//'v_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,V)
+        TMP_NAME = TRIM(FDIR)//'vs_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,Vsurf)
+        TMP_NAME = TRIM(FDIR)//'vb_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,Vbott)
+# if defined (CURVILINEAR)
+        Int2Flo=0.5_SP*(VnL(1:Mloc,1:Nloc)+VnR(1:Mloc,1:Nloc))
+        TMP_NAME = TRIM(FDIR)//'vn_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,Int2Flo)
+# endif
+     ENDIF
+
+     IF(OUT_MASK)THEN
+        TMP_NAME = TRIM(FDIR)//'mask_'//TRIM(FILE_NAME)
+        Int2Flo=MASK
+        call PutFile(TMP_NAME,Int2Flo)
+     ENDIF
+
+# if defined (RESIDUAL)
+     IF(OUT_Umean)THEN
+        TMP_NAME = TRIM(FDIR)//'umean_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,Umean)
+        TMP_NAME = TRIM(FDIR)//'umeanl_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,UmeanL)
+        TMP_NAME = TRIM(FDIR)//'umeans_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,UmeanS)
+        TMP_NAME = TRIM(FDIR)//'umeanb_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,UmeanB)
+     ENDIF
+     IF(OUT_Vmean)THEN
+        TMP_NAME = TRIM(FDIR)//'vmean_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,Vmean)
+        TMP_NAME = TRIM(FDIR)//'vmeanl_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,VmeanL)
+        TMP_NAME = TRIM(FDIR)//'vmeans_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,VmeanS)
+        TMP_NAME = TRIM(FDIR)//'vmeanb_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,VmeanB)
+     ENDIF
+     IF(OUT_ETAmean)THEN
+        TMP_NAME = TRIM(FDIR)//'etamean_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ETAmean)
+     ENDIF
+# endif
+
+     IF(OUT_3D)THEN
+        TMP_NAME = TRIM(FDIR)//'f1x_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ff11)
+        TMP_NAME = TRIM(FDIR)//'f1y_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ff12)
+        TMP_NAME = TRIM(FDIR)//'d1x_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,dd11)
+        TMP_NAME = TRIM(FDIR)//'d1y_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,dd12)
+        TMP_NAME = TRIM(FDIR)//'e1x_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ee11)
+        TMP_NAME = TRIM(FDIR)//'e1y_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ee12)       
+     ENDIF
+
+     IF(OUT_Qw)THEN
+        TMP_NAME = TRIM(FDIR)//'qwx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WaveFluxXSC)
+        TMP_NAME = TRIM(FDIR)//'qwy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WaveFluxYSC)  
+     ENDIF
+
+     IF(OUT_SourceY)THEN
+        TMP_NAME = TRIM(FDIR)//'SourceY_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,SourceY)
+     ENDIF
+     IF(OUT_SourceX)THEN
+        TMP_NAME = TRIM(FDIR)//'SourceX_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,SourceX)
+     ENDIF
+
+   ENDIF ! end shorecirc output
+
+! output for swan !!!!!!!!
+    IF(SWAN_RUN)THEN
+     IF(OUT_HS)THEN
+        TMP_NAME = TRIM(FDIR)//'hs_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WaveHeightSC)
+     ENDIF
+
+     IF(OUT_PER)THEN
+        TMP_NAME = TRIM(FDIR)//'per_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,PeakPeriodSC)
+
+        TMP_NAME = TRIM(FDIR)//'mper_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,AvePeriodSC)
+     ENDIF
+
+     IF(OUT_Wdis)THEN
+        TMP_NAME = TRIM(FDIR)//'Wdis_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WaveDissSC)
+        TMP_NAME = TRIM(FDIR)//'Wbrk_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WaveBrFraSC)
+     ENDIF
+
+     IF(OUT_WDIR)THEN
+        TMP_NAME = TRIM(FDIR)//'wdir_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WaveAngleSC)
+     ENDIF
+
+     IF(OUT_WBV)THEN
+        TMP_NAME = TRIM(FDIR)//'wbv_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WaveUbottSC)
+     ENDIF
+
+     IF(OUT_WFC)THEN
+        TMP_NAME = TRIM(FDIR)//'wfx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WaveFxSC)
+        TMP_NAME = TRIM(FDIR)//'wfy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WaveFySC)
+     ENDIF
+    ENDIF ! end swan output
+
+
+# if defined (MOMENTUM_BALANCE)
+# if defined(PARALLEL)
+    VTYPE=1
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,ACCx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,ACCy,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,ADVx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,ADVy,VTYPE,PERIODIC_X,PERIODIC_Y)
+
+! ANNA start
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,ADVxx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,ADVxy,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,ADVyx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,ADVyy,VTYPE,PERIODIC_X,PERIODIC_Y)
+! ANNA end
+
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,PREx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,PREy,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,FRCx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,FRCy,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,DIFFx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,DIFFy,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,WAVEx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,WAVEy,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,CORIx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,CORIy,VTYPE,PERIODIC_X,PERIODIC_Y)
+
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,GRDDx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,GRDDy,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,GRDFx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,GRDFy,VTYPE,PERIODIC_X,PERIODIC_Y)
+
+# if defined (WindForce)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,WINDx,VTYPE,PERIODIC_X,PERIODIC_Y)
+    CALL PHI_COLL(Mloc,Nloc,Ibeg,Iend,Jbeg,Jend,Nghost,WINDy,VTYPE,PERIODIC_X,PERIODIC_Y)
+# endif
+   ! end wind
+# endif
+! end parallel
+
+        TMP_NAME = TRIM(FDIR)//'ACCx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ACCx)
+        TMP_NAME = TRIM(FDIR)//'ACCy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ACCy)
+        TMP_NAME = TRIM(FDIR)//'ADVx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ADVx)
+        TMP_NAME = TRIM(FDIR)//'ADVy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ADVy)
+
+        TMP_NAME = TRIM(FDIR)//'ADVxx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ADVxx)
+        TMP_NAME = TRIM(FDIR)//'ADVxy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ADVxy)
+
+        TMP_NAME = TRIM(FDIR)//'ADVyx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ADVyx)
+        TMP_NAME = TRIM(FDIR)//'ADVyy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ADVyy)
+
+!        call PutFile(TMP_NAME,ADYy(1:Mloc,1:Nloc))
+        TMP_NAME = TRIM(FDIR)//'PREx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,PREx)
+        TMP_NAME = TRIM(FDIR)//'PREy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,PREy)
+        TMP_NAME = TRIM(FDIR)//'FRCx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,FRCx)
+        TMP_NAME = TRIM(FDIR)//'FRCy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,FRCy)
+      IF(WindForce)THEN
+        TMP_NAME = TRIM(FDIR)//'WINDx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WINDx)
+        TMP_NAME = TRIM(FDIR)//'WINDy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WINDy)
+      ENDIF
+        TMP_NAME = TRIM(FDIR)//'WAVEx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WAVEx)
+        TMP_NAME = TRIM(FDIR)//'WAVEy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,WAVEy)
+        TMP_NAME = TRIM(FDIR)//'CORIx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,CORIx)
+        TMP_NAME = TRIM(FDIR)//'CORIy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,CORIy)
+        TMP_NAME = TRIM(FDIR)//'DIFFx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,DIFFx)
+        TMP_NAME = TRIM(FDIR)//'DIFFy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,DIFFy)
+
+        TMP_NAME = TRIM(FDIR)//'GRDDx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,GRDDx)
+        TMP_NAME = TRIM(FDIR)//'GRDDy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,GRDDy)
+        TMP_NAME = TRIM(FDIR)//'GRDFx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,GRDFx)
+        TMP_NAME = TRIM(FDIR)//'GRDFy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,GRDFy)
+
+# endif
+
+# if defined (SEDIMENT)
+! sediment output
+    IF(.NOT.FIRST_CALL_SEDIMENT)THEN
+     IF(OUT_Qsed)THEN
+        TMP_NAME = TRIM(FDIR)//'qsedx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,SedFluxX)
+        TMP_NAME = TRIM(FDIR)//'qsedy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,SedFluxY)
+        IF(KOBAYASHI)THEN
+          TMP_NAME = TRIM(FDIR)//'qbedx_'//TRIM(FILE_NAME)
+          call PutFile(TMP_NAME,BedFluxX)
+          TMP_NAME = TRIM(FDIR)//'qbedy_'//TRIM(FILE_NAME)
+          call PutFile(TMP_NAME,BedFluxY)
+          TMP_NAME = TRIM(FDIR)//'qsusx_'//TRIM(FILE_NAME)
+          call PutFile(TMP_NAME,SusFluxX)
+          TMP_NAME = TRIM(FDIR)//'qsusy_'//TRIM(FILE_NAME)
+          call PutFile(TMP_NAME,SusFluxY)
+        ENDIF ! end kobayashi
+     ENDIF
+     IF(OUT_DepDt)THEN
+        TMP_NAME = TRIM(FDIR)//'depdt_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,DepDt) 
+        TMP_NAME = TRIM(FDIR)//'dep_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,Depth)       
+     ENDIF
+    ENDIF
+
+# if defined (SUSPENDED_LOAD)
+     IF(OUT_ConSed)THEN
+          TMP_NAME = TRIM(FDIR)//'consed_'//TRIM(FILE_NAME)
+          call PutFile(TMP_NAME,Con_Sed)
+     ENDIF
+
+# endif
+# endif
+
+# if defined (DYE)
+     IF(OUT_ConDye)THEN
+          TMP_NAME = TRIM(FDIR)//'condye_'//TRIM(FILE_NAME)
+          call PutFile(TMP_NAME,Con_Dye)
+     ENDIF
+# endif
+
+
+210   FORMAT(5000I3)
+
+
+     IF(OUT_TMP)THEN
+        TMP_NAME = TRIM(FDIR)//'tmp_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,tmp4preview)
+     ENDIF
+
+# if defined (ONLINE)
+     ENDIF    ! end myid=0
+# endif
+
+101   continue
+
+END SUBROUTINE PREVIEW
+
+# if defined (PARALLEL)
+SUBROUTINE GetFile (FILE,PHI)
+     USE GLOBAL
+     IMPLICIT NONE
+
+     INTEGER :: l
+     ! could be max. procs
+     INTEGER,DIMENSION(NumberProcessor) :: npxs,npys
+     REAL(SP),DIMENSION(NumberProcessor) :: xx
+     REAL(SP),DIMENSION(MGlob+2*Nghost,NGlob+2*Nghost) :: PHIGLOB
+     CHARACTER(LEN=80) FILE
+     REAL(SP),DIMENSION(Mloc,Nloc),INTENT(OUT) :: PHI
+
+! TEMP
+
+     if (myid.eq.0) then
+        OPEN(1,FILE=TRIM(FILE))
+        DO J=Nghost+1,NGlob+NGhost
+           READ(1,*)(PHIGLOB(I,J),I=Nghost+1,MGlob+Nghost)
+        ENDDO
+        CLOSE(1)
+! ghost cells for initial uvz only
+        DO I=Nghost+1,MGlob+Nghost
+           DO J=1,Nghost
+              PHIGLOB(I,J)=PHIGLOB(I,Nghost+1)
+           ENDDO
+           DO J=NGlob+Nghost+1,NGlob+2*Nghost
+              PHIGLOB(I,J)=PHIGLOB(I,NGlob+Nghost)
+           ENDDO
+        ENDDO
+        DO J=1,NGlob+2*Nghost
+           DO I=1,Nghost
+              PHIGLOB(I,J)=PHIGLOB(Nghost+1,J)
+           ENDDO
+           DO I=MGlob+Nghost+1,MGlob+2*Nghost
+              PHIGLOB(I,J)=PHIGLOB(MGlob+Nghost,J)
+           ENDDO
+        ENDDO
+     endif
+
+     call MPI_Gather(npx,1,MPI_INTEGER,npxs,1,MPI_INTEGER,&
+          0,MPI_COMM_WORLD,ier)
+     call MPI_Gather(npy,1,MPI_INTEGER,npys,1,MPI_INTEGER,&
+          0,MPI_COMM_WORLD,ier)
+
+     do i=1,Mloc
+     do j=1,Nloc
+        if (myid.eq.0) then
+           do l=1,px*py
+              xx(l) = PHIGLOB(i+npxs(l)*(Iend-Ibeg+1),&
+                   j+npys(l)*(Jend-Jbeg+1))
+           enddo
+        endif
+        call MPI_Scatter(xx,1,MPI_SP,&
+             PHI(i,j),1,MPI_SP,0,MPI_COMM_WORLD,ier)
+     enddo
+     enddo
+
+END SUBROUTINE Getfile
+
+SUBROUTINE GetDepthPeriodic (FILE,PHI)
+     USE GLOBAL
+     IMPLICIT NONE
+
+     INTEGER :: l
+     ! could be max. procs
+     INTEGER,DIMENSION(NumberProcessor) :: npxs,npys
+     REAL(SP),DIMENSION(NumberProcessor) :: xx
+     REAL(SP),DIMENSION(MGlob+2*Nghost,NGlob+2*Nghost) :: PHIGLOB
+     REAL(SP),DIMENSION(MGlob,NGlob) :: PHIGLOB_noghost
+     CHARACTER(LEN=80) FILE
+     REAL(SP),DIMENSION(Mloc,Nloc),INTENT(OUT) :: PHI
+     REAL(SP) :: TMP_L, TMP_R
+!     LOGICAL, INTENT(IN) :: PERIODIC_X,PERIODIC_Y
+
+! TEMP
+
+     if (myid.eq.0) then
+        OPEN(1,FILE=TRIM(FILE))
+        DO J=1,NGlob
+           READ(1,*)(PHIGLOB_noghost(I,J),I=1,MGlob)
+        ENDDO
+        CLOSE(1)
+
+! periodic_x
+     IF(PERIODIC_X)THEN
+       DO J=1,NGlob
+        TMP_L=PHIGLOB_noghost(MGlob-Num_Transit+1,J)
+        TMP_R=PHIGLOB_noghost(Num_Transit,J)
+        DO I=1,Num_Transit
+          PHIGLOB_noghost(I,J)=TMP_L+(TMP_R-TMP_L)*(I+Num_Transit-1)/(2.0*Num_Transit)
+        ENDDO
+        DO I=MGlob-Num_Transit,MGlob
+          PHIGLOB_noghost(I,J)=TMP_L+(TMP_R-TMP_L)*(I-MGlob+Num_Transit)/(2.0*Num_Transit)
+        ENDDO
+       ENDDO
+     ENDIF
+
+! periodic_y
+     IF(PERIODIC_Y)THEN
+       DO I=1,MGlob
+        TMP_L=PHIGLOB_noghost(I,NGlob-Num_Transit+1)
+        TMP_R=PHIGLOB_noghost(I, Num_Transit)
+        DO J=1,Num_Transit
+          PHIGLOB_noghost(I,J)=TMP_L+(TMP_R-TMP_L)*(J+Num_Transit-1)/(2.0*Num_Transit)
+        ENDDO
+        DO J=NGlob-Num_Transit,NGlob
+          PHIGLOB_noghost(I,J)=TMP_L+(TMP_R-TMP_L)*(J-NGlob+Num_Transit)/(2.0*Num_Transit)
+        ENDDO
+       ENDDO
+     ENDIF
+
+     DO J=Nghost+1,NGlob+NGhost
+      DO I=Nghost+1,MGlob+Nghost
+        PHIGLOB(I,J) =PHIGLOB_noghost(I-Nghost,J-Nghost)
+      ENDDO
+     ENDDO
+
+! ghost cells for initial uvz only
+        DO I=Nghost+1,MGlob+Nghost
+           DO J=1,Nghost
+              PHIGLOB(I,J)=PHIGLOB(I,Nghost+1)
+           ENDDO
+           DO J=NGlob+Nghost+1,NGlob+2*Nghost
+              PHIGLOB(I,J)=PHIGLOB(I,NGlob+Nghost)
+           ENDDO
+        ENDDO
+        DO J=1,NGlob+2*Nghost
+           DO I=1,Nghost
+              PHIGLOB(I,J)=PHIGLOB(Nghost+1,J)
+           ENDDO
+           DO I=MGlob+Nghost+1,MGlob+2*Nghost
+              PHIGLOB(I,J)=PHIGLOB(MGlob+Nghost,J)
+           ENDDO
+        ENDDO
+
+     endif ! end myid==0
+
+     call MPI_Gather(npx,1,MPI_INTEGER,npxs,1,MPI_INTEGER,&
+          0,MPI_COMM_WORLD,ier)
+     call MPI_Gather(npy,1,MPI_INTEGER,npys,1,MPI_INTEGER,&
+          0,MPI_COMM_WORLD,ier)
+
+     do i=1,Mloc
+     do j=1,Nloc
+        if (myid.eq.0) then
+           do l=1,px*py
+              xx(l) = PHIGLOB(i+npxs(l)*(Iend-Ibeg+1),&
+                   j+npys(l)*(Jend-Jbeg+1))
+           enddo
+        endif
+        call MPI_Scatter(xx,1,MPI_SP,&
+             PHI(i,j),1,MPI_SP,0,MPI_COMM_WORLD,ier)
+     enddo
+     enddo
+
+END SUBROUTINE GetDepthPeriodic
+
+#if defined (ONLINE)
+
+SUBROUTINE GetFileOnline (FILE,PHI)
+     USE PARAM
+     USE GLOBAL, ONLY : Mloc,Nloc,Nghost
+     IMPLICIT NONE
+     CHARACTER(LEN=80) FILE
+     REAL(SP),DIMENSION(Mloc,Nloc),INTENT(OUT) :: PHI
+
+      OPEN(1,FILE=TRIM(FILE))
+       DO J=Nghost+1,Nloc-Nghost
+        READ(1,*)(PHI(I,J),I=Nghost+1,Mloc-Nghost)
+       ENDDO
+      CLOSE(1)
+
+! ghost cells for initial uvz only
+        DO I=Nghost+1,Mloc-Nghost
+           DO J=1,Nghost
+              PHI(I,J)=PHI(I,Nghost+1)
+           ENDDO
+           DO J=Nloc-Nghost+1,Nloc
+              PHI(I,J)=PHI(I,Nloc-Nghost)
+           ENDDO
+        ENDDO
+        DO J=1,Nloc
+           DO I=1,Nghost
+              PHI(I,J)=PHI(Nghost+1,J)
+           ENDDO
+           DO I=Mloc-Nghost+1,Mloc
+              PHI(I,J)=PHI(Mloc-Nghost,J)
+           ENDDO
+        ENDDO
+
+END SUBROUTINE GetfileOnline
+
+# endif 
+! end of online
+
+# else
+SUBROUTINE GetFile (FILE,PHI)
+     USE PARAM
+     USE GLOBAL, ONLY : Mloc,Nloc,Nghost
+     IMPLICIT NONE
+     CHARACTER(LEN=80) FILE
+     REAL(SP),DIMENSION(Mloc,Nloc),INTENT(OUT) :: PHI
+
+      OPEN(1,FILE=TRIM(FILE))
+       DO J=Nghost+1,Nloc-Nghost
+        READ(1,*)(PHI(I,J),I=Nghost+1,Mloc-Nghost)
+       ENDDO
+      CLOSE(1)
+
+! ghost cells for initial uvz only
+        DO I=Nghost+1,Mloc-Nghost
+           DO J=1,Nghost
+              PHI(I,J)=PHI(I,Nghost+1)
+           ENDDO
+           DO J=Nloc-Nghost+1,Nloc
+              PHI(I,J)=PHI(I,Nloc-Nghost)
+           ENDDO
+        ENDDO
+        DO J=1,Nloc
+           DO I=1,Nghost
+              PHI(I,J)=PHI(Nghost+1,J)
+           ENDDO
+           DO I=Mloc-Nghost+1,Mloc
+              PHI(I,J)=PHI(Mloc-Nghost,J)
+           ENDDO
+        ENDDO
+
+END SUBROUTINE Getfile
+# endif
+
+# if defined (PARALLEL)
+# if defined (ONLINE)
+SUBROUTINE PutFile(FILE,PHI)
+     USE PARAM
+     USE GLOBAL
+     IMPLICIT NONE
+     REAL(SP),DIMENSION(Mloc,Nloc),INTENT(IN) :: PHI
+     CHARACTER(LEN=80) FILE
+        OPEN(1,FILE=TRIM(FILE))
+        DO J=Nghost+1,Nloc-Nghost
+           WRITE(1,100)(real(PHI(I,J)),I=Nghost+1,Mloc-Nghost)
+        ENDDO
+100  FORMAT(5000E16.6)
+        CLOSE(1)
+END SUBROUTINE PutFile
+
+# else 
+! not online
+SUBROUTINE PutFile (FILE,PHI)
+     USE GLOBAL
+     IMPLICIT NONE
+
+     INTEGER :: l
+     ! could be max. procs
+     INTEGER,DIMENSION(NumberProcessor) :: npxs,npys
+     REAL(SP),DIMENSION(NumberProcessor) :: xx
+     REAL(SP),DIMENSION(MGlob+2*Nghost,NGlob+2*Nghost) :: PHIGLOB
+     CHARACTER(LEN=80) FILE
+     REAL(SP),DIMENSION(Mloc,Nloc),INTENT(IN) :: PHI
+
+     call MPI_Gather(npx,1,MPI_INTEGER,npxs,1,MPI_INTEGER,&
+          0,MPI_COMM_WORLD,ier)
+     call MPI_Gather(npy,1,MPI_INTEGER,npys,1,MPI_INTEGER,&
+          0,MPI_COMM_WORLD,ier)
+
+     do i=1,Mloc
+     do j=1,Nloc
+        call MPI_Gather(PHI(i,j),1,MPI_SP,&
+             xx,1,MPI_SP,0,MPI_COMM_WORLD,ier)
+
+        if (j.eq.1) call MPI_Barrier(MPI_COMM_WORLD,ier)
+
+        if (myid.eq.0) then
+           do l=1,px*py
+              PHIGLOB(i+npxs(l)*(Iend-Ibeg+1),&
+                   j+npys(l)*(Jend-Jbeg+1)) = xx(l)
+           enddo
+        endif
+     enddo
+     enddo
+
+     if (myid.eq.0) then
+        OPEN(1,FILE=TRIM(FILE))
+        DO J=Nghost+1,NGlob+NGhost
+           WRITE(1,100)(real(PHIGLOB(I,J)),I=Nghost+1,MGlob+Nghost)
+        ENDDO
+100  FORMAT(5000E16.6)
+        CLOSE(1)
+     endif
+
+END SUBROUTINE Putfile
+# endif 
+! end online
+
+# else
+SUBROUTINE PutFile(FILE,PHI)
+     USE PARAM
+     USE GLOBAL
+     IMPLICIT NONE
+     REAL(SP),DIMENSION(Mloc,Nloc),INTENT(IN) :: PHI
+     CHARACTER(LEN=80) FILE
+        OPEN(1,FILE=TRIM(FILE))
+# if defined(DEBUG)
+        DO J=1,Nloc
+           WRITE(1,100)(real(PHI(I,J)),I=1,Mloc)
+        ENDDO
+# else
+        DO J=Nghost+1,Nloc-Nghost
+           WRITE(1,100)(real(PHI(I,J)),I=Nghost+1,Mloc-Nghost)
+        ENDDO
+# endif
+
+100  FORMAT(5000E16.6)
+        CLOSE(1)
+END SUBROUTINE PutFile
+
+# endif
+
+
+# if defined (TRACKING)
+SUBROUTINE TRACKING_OUTPUT
+     USE TRACER
+     USE GLOBAL,ONLY : TIME, RESULT_FOLDER
+# if defined (PARALLEL)
+     USE GLOBAL,ONLY : myid
+# endif
+     IMPLICIT NONE
+     LOGICAL, SAVE :: FirstCallTrackingOutput = .TRUE.
+
+# if defined (PARALLEL)
+    if(myid==0)then
+# endif
+     IF(FirstCallTrackingOutput)THEN
+       FirstCallTrackingOutput = .FALSE.
+       OPEN(8,FILE=TRIM(RESULT_FOLDER)//'tk_x.txt')
+       OPEN(9,FILE=TRIM(RESULT_FOLDER)//'tk_y.txt')
+     ENDIF
+
+     WRITE(8,'(1000E20.10E3)')TIME,(X_TRACK(I),I=1,NumTracker)
+     WRITE(9,'(1000E20.10E3)')TIME,(Y_TRACK(I),I=1,NumTracker)
+# if defined (PARALLEL)
+    endif
+# endif
+
+END SUBROUTINE TRACKING_OUTPUT
+# endif
+
+# if defined(PARALLEL)
+! under-development
+# else
+! --------------------------------------------------
+!    This is subroutine to read hot start data and initialize other 
+!    variables
+!    called by
+!       MAIN
+!    
+!    Last Update: 10/21/2010 Fengyan Shi, University of Delaware
+! --------------------------------------------------
+SUBROUTINE READ_HOTSTART_DATA
+     USE GLOBAL
+     IMPLICIT NONE
+     CHARACTER(LEN=80)::FDIR=''
+     CHARACTER(LEN=80)::WHAT
+     INTEGER :: Icontr
+     INTEGER :: RMloc,RNloc,RNghost
+     REAL(SP) :: RTOTAL_TIME,RPLOT_INTV,RSCREEN_INTV,RHOTSTART_INTV
+     REAL(SP) :: RDX,RDY
+     LOGICAL :: RDISPERSION,RSPONGE_ON
+     REAL(SP) :: RGamma1,RSWE_ETA_DEP
+     REAL(SP) :: RGamma2
+
+     CHARACTER(LEN=80) RTime_Scheme
+     CHARACTER(LEN=80) RCONSTR
+     CHARACTER(LEN=80) RHIGH_ORDER
+     REAL(SP) :: RCFL,RFroudeCap
+     REAL(SP) :: RMinDepth,RMinDepthfrc
+     REAL(SP) :: RSponge_west_width,RSponge_east_width, &
+                 RSponge_south_width,RSponge_north_width, &
+                 RR_sponge,RA_sponge
+     CHARACTER(LEN=80)::FILE_NAME=''
+
+
+        itmp1=mod(FileNumber_HOTSTART/1000,10)
+        itmp2=mod(FileNumber_HOTSTART/100,10)
+        itmp3=mod(FileNumber_HOTSTART/10,10)
+        itmp4=mod(FileNumber_HOTSTART,10)
+
+
+        !write(file_name(1:1),'(I1)')itmp1
+        !write(file_name(2:2),'(I1)')itmp2
+        !write(file_name(3:3),'(I1)')itmp3
+        !write(file_name(4:4),'(I1)')itmp4
+
+     FDIR=TRIM(RESULT_FOLDER)
+     
+     !WRITE(*,*)'READ IN HOT START DATA ...'
+     
+     OPEN(4,FILE=TRIM(FDIR)//'hotstart.'//TRIM(FILE_NAME))
+    
+     CLOSE(4)
+
+     !WRITE(*,*)'READ HOT START DATA OVER!'
+    
+     CLOSE(4)
+
+END SUBROUTINE READ_HOTSTART_DATA
+
+# endif
+
+# if defined(PARALLEL)
+! under-development
+# else
+SUBROUTINE WRITE_HOTSTART_DATA
+     USE GLOBAL
+     IMPLICIT NONE
+     CHARACTER(LEN=80)::FDIR=''
+     CHARACTER(LEN=80)::FILE_NAME=''
+
+
+     FDIR=TRIM(RESULT_FOLDER)
+
+     ICOUNT_HOTSTART=ICOUNT_HOTSTART+1
+
+        WRITE(*,102)'HOTSTART FILE NO.', icount_hotstart
+102     FORMAT(A20,I4)
+
+        itmp1=mod(icount_hotstart/1000,10)
+        itmp2=mod(icount_hotstart/100,10)
+        itmp3=mod(icount_hotstart/10,10)
+        itmp4=mod(icount_hotstart,10)
+
+
+        !write(file_name(1:1),'(I1)')itmp1
+        !write(file_name(2:2),'(I1)')itmp2
+        !write(file_name(3:3),'(I1)')itmp3
+        !write(file_name(4:4),'(I1)')itmp4
+
+     !WRITE(*,*)'!WRITE OUT HOT START DATA ...'
+     
+     OPEN(4,FILE=TRIM(FDIR)//'hotstart.'//TRIM(FILE_NAME))
+! -- dimension
+     !WRITE(4,*)'# Mloc,Nloc,Mloc1,Nloc1,Ibeg,Iend,Jbeg,Jend,Iend1,Jend1,Nghost'
+     !WRITE(4,*)Mloc,Nloc,Mloc1,Nloc1,Ibeg,Iend,Jbeg,Jend,Iend1,Jend1,Nghost
+! -- time
+     !WRITE(4,*)'# TIME,TOTAL_TIME,PLOT_INTV,PLOT_COUNT'
+     !WRITE(4,*)'# SCREEN_INTV,SCREEN_COUNT,HOTSTART_INTV'
+     !WRITE(4,*)TIME,TOTAL_TIME,PLOT_INTV,PLOT_COUNT,&
+!               SCREEN_INTV,SCREEN_COUNT,HOTSTART_INTV
+     !WRITE(4,*)'# ICOUNT'
+     !WRITE(4,*)ICOUNT
+     !WRITE(4,*)'# ICOUNT_HOTSTART'
+     !WRITE(4,*)ICOUNT_HOTSTART
+! -- physics
+! DISPERSION
+     !WRITE(4,*)'# DISPERSION'
+     !WRITE(4,*)DISPERSION
+
+     !WRITE(4,*)'# Gamma1,a1,a2,b1,b2,SWE_ETA_DEP'
+     !WRITE(4,*)Gamma1,a1,a2,b1,b2,SWE_ETA_DEP
+! -- numerics
+     !WRITE(4,*)'# Time_Scheme'
+     !WRITE(4,*)Time_Scheme
+     
+     !WRITE(4,*)'# HIGH_ORDER,CONSTR'
+     !WRITE(4,*)HIGH_ORDER,CONSTR
+
+     !WRITE(4,*)'# CFL,FroudeCap'
+     !WRITE(4,*)CFL,FroudeCap
+
+! -- wet-dry
+     !WRITE(4,*)'# MinDepth,MinDepthfrc'
+     !WRITE(4,*)MinDepth,MinDepthfrc
+
+! -- depth
+
+      !WRITE(4,*)'# DEPTH'
+      !WRITE(4,*)((DEPTH(I,J),I=1,Mloc),J=1,Nloc)
+      !WRITE(4,*)'# DEPTHx'
+      !WRITE(4,*)((DEPTHx(I,J),I=1,Mloc),J=1,Nloc)
+      !WRITE(4,*)'# DEPTHy'
+      !WRITE(4,*)((DEPTHy(I,J),I=1,Mloc),J=1,Nloc)
+! variables
+      !WRITE(4,*)'# U'
+      !WRITE(4,*)((U(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# V'
+      !WRITE(4,*)((V(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# U0'
+      !WRITE(4,*)((U0(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# V0'
+      !WRITE(4,*)((V0(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# Ubar'
+      !WRITE(4,*)((Ubar(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# Vbar'
+      !WRITE(4,*)((Vbar(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# ETA'
+      !WRITE(4,*)((ETA(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# H'
+      !WRITE(4,*)((H(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# MASK'
+      !WRITE(4,*)((MASK(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# MASK9'
+      !WRITE(4,*)((MASK9(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# MASK_STRUC'
+      !WRITE(4,*)((MASK_STRUC(I,J),I=1,Mloc),J=1,Nloc)
+
+      !WRITE(4,*)'# SPONGE_ON'
+      !WRITE(4,*) SPONGE_ON
+  
+      !WRITE(4,*)'# SPONGE Width'
+      !WRITE(4,*)Sponge_west_width,Sponge_east_width, &
+!                 Sponge_south_width,Sponge_north_width
+  
+      !WRITE(4,*)'# SPONGE R and A'
+      !WRITE(4,*)R_sponge,A_sponge
+      
+    
+     CLOSE(4)
+
+END SUBROUTINE !WRITE_HOTSTART_DATA
+
+# endif

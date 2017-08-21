@@ -1,0 +1,76 @@
+# if defined (SEDIMENT)
+MODULE SEDI
+       USE PARAM
+       IMPLICIT NONE
+
+       SAVE
+
+! Soulsby
+       REAL(SP) :: nu_water = 0.00000136_SP ! kinematic viscosity of water
+       REAL(SP) :: D_50 = 0.0002_SP, D_90 = 0.0002_SP, &
+                   z0 = 0.006 ! bed roughness length (m)
+       REAL(SP) :: por = 0.35_SP,RHO=1027.0_SP
+       REAL(SP) :: Dst,Ass
+       REAL(SP) :: SlopeParameter = 1.6_SP
+       LOGICAL :: VanRjin_wave_effect = .FALSE.
+# if defined (MULTISIZE)
+       REAL(SP),DIMENSION(:,:),ALLOCATABLE :: SizePerc
+       CHARACTER(LEN=80) SEDIMENT_SIZE_FILE     
+       INTEGER :: NumSedimentSize  
+# endif
+
+! Kobayashi
+       REAL(SP) :: S_sed = 2.65_SP,eB=0.002_SP,ef=0.01_SP, &
+                   a_k=0.2_SP,b_k=0.002_SP,TanPhi=0.63_SP, &
+                   Gm=10.0_SP,frc=0.015_SP,Si_c =0.05_SP, &
+                   wf,angle_x_beach
+
+       REAL(SP),DIMENSION(:,:),ALLOCATABLE :: SedFluxX,SedFluxY, &
+                   SusFluxX,SusFluxY,BedFluxX,BedFluxY, &
+                   SlopeX,SlopeY,DepDt   
+# if defined (SUSPENDED_LOAD)
+! suspended load
+       REAL(SP),DIMENSION(:,:),ALLOCATABLE :: Con_Sed,Vol_Sed
+       LOGICAL :: Out_ConSed = .FALSE.
+# endif
+
+# if defined (DYE)
+! dye release
+       REAL(SP),DIMENSION(:,:),ALLOCATABLE :: Con_Dye,Vol_dye
+       LOGICAL :: Out_ConDye = .FALSE.
+# endif
+
+
+# if defined(CYCLEUPDATE)
+       REAL(SP),DIMENSION(:,:),ALLOCATABLE :: DepDtCycle
+       REAL(SP) :: T_sum_cycle = 0.0
+       REAL(SP) :: T_INTV_cycle
+# endif
+# if defined(ONLINE)
+       REAL(SP) :: T_sum_cycle = 0.0
+       REAL(SP) :: T_INTV_cycle
+# endif
+       REAL(SP) :: TanBeta        
+       REAL(SP) :: T_INTV_Sed,Factor_Morpho,DT_SED_REAL_INTV = ZERO 
+       REAL(SP) :: SEDI_TIME_COUNT = ZERO
+
+       LOGICAL :: FIRST_CALL_SEDIMENT = .TRUE.
+       LOGICAL :: OUT_DepDt=.FALSE.,OUT_Qsed=.FALSE.
+       LOGICAL :: SOULSBY=.TRUE. 
+       LOGICAL :: KOBAYASHI=.FALSE.
+       LOGICAL :: VANRJIN1991 = .FALSE.
+
+       REAL(SP),DIMENSION(:,:),ALLOCATABLE :: &
+         MASK_BED_INTERACT
+! number of grid points for bed-update region
+       INTEGER :: BED_BOUND_WEST, BED_BOUND_EAST, &
+                  BED_BOUND_SOUTH,BED_BOUND_NORTH
+       REAL(SP) :: BED_LAG
+
+END MODULE SEDI
+
+# else
+MODULE SEDI
+! nothing
+END MODULE SEDI
+# endif

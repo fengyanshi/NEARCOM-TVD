@@ -1,0 +1,194 @@
+SUBROUTINE SHORECIRC_INITIALIZATION
+     USE GLOBAL
+     IMPLICIT NONE
+     INTEGER::ISTAGE
+
+     CALL READ_INPUT
+
+     CALL INDEX
+
+! allocate variables
+     CALL ALLOCATE_VARIABLES
+
+     CALL INITIALIZATION
+
+
+END SUBROUTINE SHORECIRC_INITIALIZATION
+
+
+
+SUBROUTINE SHORECIRC_CYCLE
+     USE GLOBAL
+# if defined (TRACKING)
+     USE TRACER
+# endif
+     IMPLICIT NONE
+     INTEGER::ISTAGE
+
+! update three variables
+     Eta0=Eta
+     Ubar0=Ubar
+     Vbar0=Vbar  
+
+     CALL UPDATE_MASK
+
+     CALL EXCHANGE
+
+! updates in exchange  
+# if defined (COUPLING)
+         CALL OneWayCoupling
+# endif
+
+# if defined (PARALLEL)
+   ! broadcast dt
+# endif
+
+# if defined (CURVILINEAR)
+     CALL ESTIMATE_DT(Mloc,Nloc,JS1,JS2,U,V,H,MinDepthFrc,DT,CFL,TIME)
+
+# else
+     CALL ESTIMATE_DT(Mloc,Nloc,DX,DY,U,V,H,MinDepthFrc,DT,CFL,TIME)
+# endif
+
+
+!  Runge-Kutta Scheme 
+     ! 3-ORDER RUNGE-KUTTA TIME STEPPING
+     DO ISTAGE=1,3
+ 
+       CALL FLUXES
+
+       CALL BOUNDARY_CONDITION
+
+       IF(WindForce)THEN
+         CALL WIND_SPEED
+       ENDIF
+
+       CALL SOLVE_3D
+
+       CALL SourceTerms   ! put sourceterms after fluxes in order to get eta_t
+
+       CALL ESTIMATE_HUV(ISTAGE)  
+
+! call boundary condition test
+       CALL TIDE
+
+       CALL EXCHANGE
+
+! updates in exchange  
+# if defined (COUPLING)
+         CALL OneWayCoupling
+# endif
+
+       IF(SPONGE_ON)THEN
+         CALL SPONGE_DAMPING
+       ENDIF
+
+     ENDDO
+ 
+!   end Runge-Kutta Scheme
+
+# if defined(TRACKING)
+       CALL MAIN_TRACK
+       TRACK_TIME_COUNT=TRACK_TIME_COUNT+DT
+       IF(TRACK_TIME_COUNT>=TrackerInterval)THEN
+         TRACK_TIME_COUNT=TRACK_TIME_COUNT-TrackerInterval
+         CALL TRACKING_OUTPUT
+       ENDIF
+# endif
+
+
+# if defined (RESIDUAL)
+! calculate residual
+      CALL CALCULATE_MEAN(T_INTV_mean,T_sum,DT,Mloc,Nloc,U,V,ETA,H,&
+           Umean,Vmean,ETAmean,Usum,Vsum,ETAsum, &
+           UmeanL,VmeanL,UsumL,VsumL, &
+           UmeanS,VmeanS,UsumS,VsumS,&
+           UmeanB,VmeanB,UsumB,VsumB)
+# endif
+
+
+! ANNA start
+# if defined(MOMENTUM_BALANCE_JACOBI)
+!     ACCx=(Ubar-Ubar0)/DT  ! note that it is not accurate in this way 
+!     ACCy=(Vbar-Vbar0)/DT  ! in terms of RK method
+
+     DO J=Jbeg,Jend
+     DO I=Ibeg,Iend
+      ACCx(I,j)=SourceX(I,j)-GRDFx(I,j)
+      ACCy(I,j)=SourceY(I,j)-GRDFy(I,j)
+     ENDDO
+     ENDDO
+
+     DO J=Jbeg,Jend
+     DO I=Ibeg,Iend
+! for anna application she needs split adv into der x and der y
+       ADVxx(I,J)=0.5*(ADXx(I+1,J)-ADXx(I-1,J)) 
+       ADVxy(I,J)=0.5*(ADXy(I,J+1)-ADXy(I,J-1))
+       ADVyx(I,J)=+0.5*(ADYx(I+1,J)-ADYx(I-1,J))
+       ADVyy(I,J)=+0.5*(ADYy(I,J+1)-ADYy(I,J-1))
+
+       ADVx(I,J)=ADVxx(I,J) &
+                +ADVxy(I,J)
+       ADVy(I,J)=ADVyx(I,J) &
+                +ADVyy(I,J)
+
+!       PREx(I,J)=-0.5*(PRXx(I+1,J)-PRXx(I-1,J))*Depth(I,J) &
+!                -0.5*(PRXy(I,J+1)-PRXy(I,J-1))*Depth(I,J)
+!       PREy(I,J)=-0.5*(PRYx(I+1,J)-PRYx(I-1,J))*Depth(I,J) &
+!                -0.5*(PRYy(I,J+1)-PRYy(I,J-1))*Depth(I,J)
+     ENDDO
+     ENDDO   
+
+! we assume pre-grad = flux - adv + grdd
+     DO J=Jbeg,Jend
+     DO I=Ibeg,Iend
+      PREx(I,J) = GRDFx(I,J)- ADVx(I,J)+ GRDDx(I,J)
+      PREy(I,J) = GRDFy(I,J)- ADVy(I,J)+ GRDDy(I,J)
+     ENDDO
+     ENDDO
+
+# endif
+
+
+# if defined(MOMENTUM_BALANCE)
+!     ACCx=(Ubar-Ubar0)/DT  ! note that it is not accurate in this way 
+!     ACCy=(Vbar-Vbar0)/DT  ! in terms of RK method
+
+     DO J=Jbeg,Jend
+     DO I=Ibeg,Iend
+      ACCx(I,j)=(SourceX(I,j)-GRDFx(I,j))/Jaco(I,j)
+      ACCy(I,j)=(SourceY(I,j)-GRDFy(I,j))/Jaco(I,j)
+     ENDDO
+     ENDDO
+
+     DO J=Jbeg,Jend
+     DO I=Ibeg,Iend
+! for anna application she needs split adv into der x and der y
+       ADVxx(I,J)=0.5*(ADXx(I+1,J)-ADXx(I-1,J))/Jaco(I,J)
+       ADVxy(I,J)=0.5*(ADXy(I,J+1)-ADXy(I,J-1))/Jaco(I,J)
+       ADVyx(I,J)=+0.5*(ADYx(I+1,J)-ADYx(I-1,J))/Jaco(I,J)
+       ADVyy(I,J)=+0.5*(ADYy(I,J+1)-ADYy(I,J-1))/Jaco(I,J)
+
+       ADVx(I,J)=ADVxx(I,J) &
+                +ADVxy(I,J)
+       ADVy(I,J)=ADVyx(I,J) &
+                +ADVyy(I,J)
+
+     ENDDO
+     ENDDO   
+
+! we assume pre-grad = flux - adv + grdd
+     DO J=Jbeg,Jend
+     DO I=Ibeg,Iend
+      PREx(I,J) = GRDFx(I,J)/Jaco(I,J)- ADVx(I,J)+ GRDDx(I,J)
+      PREy(I,J) = GRDFy(I,J)/Jaco(I,J)- ADVy(I,J)+ GRDDy(I,J)
+     ENDDO
+     ENDDO
+
+# endif
+! end momentum balance
+
+! ANNA end
+
+END SUBROUTINE SHORECIRC_CYCLE
+             

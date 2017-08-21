@@ -1,0 +1,39 @@
+
+Equation
+
+ACCx + GRDFx + GRDDx + FRCx + CORIx + WAVEx + DIFFx +WINDx = 0
+ACCy + GRDFy + GRDDy + FRCy + CORIy + WAVEy + DIFFy +WINDy = 0
+
+
+     ACCx=(Ubar-Ubar0)/DT
+     ACCy=(Vbar-Vbar0)/DT
+
+       ADVx(I,J)=-0.5*(ADXx(I+1,J)-ADXx(I-1,J)) &
+                -0.5*(ADXy(I,J+1)-ADXy(I,J-1))
+       ADVy(I,J)=-0.5*(ADYx(I+1,J)-ADYx(I-1,J)) &
+                -0.5*(ADYy(I,J+1)-ADYy(I,J-1))
+       PREx(I,J)=-0.5*(PRXx(I+1,J)-PRXx(I-1,J))*Depth(I,J) &
+                -0.5*(PRXy(I,J+1)-PRXy(I,J-1))*Depth(I,J)
+       PREy(I,J)=-0.5*(PRYx(I+1,J)-PRYx(I-1,J))*Depth(I,J) &
+                -0.5*(PRYy(I,J+1)-PRYy(I,J-1))*Depth(I,J)
+
+
+      GRDDx(I,J)=-SourceX(I,J)
+      FRCx(I,J)=Jaco(I,J)*Tau_bx(I,J)
+      CORIx(I,J)=-Coriolis(I,J)*Vbar(I,J) 
+      WAVEx(I,J)=-Jaco(I,J)*grav*WaveFxSC(I,J)
+       DIFFx(I,J)=-diffusion
+      WINDx(I,J)=-Jaco(I,J)*Tau_sx(I,J)
+      GRDFx(I,J)=1.0_SP/DX*(F_right*n_right+F_left*n_left) &
+                       -1.0_SP/DY*(F_top*n_top+F_bottom*n_bottom)
+
+      GRDDy(I,J)=-SourceY(I,J)
+       FRCy(I,J)=Jaco(I,J)*Tau_by(I,J) 
+       CORIy(I,J)=Coriolis(I,J)*Ubar(I,J)
+       WAVEy(I,J)=-Jaco(I,J)*grav*WaveFySC(I,J)
+       DIFFy(I,J)=-diffusion
+          WINDy(I,J)=-Jaco(I,J)*Tau_sy(I,J)
+      GRDFy(I,J)=1.0_SP/DX*(F_right*n_right+F_left*n_left) &
+                       -1.0_SP/DY*(F_top*n_top+F_bottom*n_bottom)
+
+
