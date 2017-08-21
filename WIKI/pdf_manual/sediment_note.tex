@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+
+\usepackage{times}
+\usepackage{amsbsy}
+
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+  
+\newcommand{\beq}{\begin{eqnarray}}
+\newcommand{\eeq}{\end{eqnarray}}
+\newcommand{\ba}{\begin{eqnarray}}
+\newcommand{\ea}{\end{eqnarray}}
+
+\newcommand{\ua}{{\bf u}_\alpha}
+\newcommand{\utwo}{\overline{\bf u}_2}
+
+
+\newcommand{\ubar}{\overline{u}}
+\newcommand{\vbar}{\overline{v}}
+\newcommand{\phis}{{\phi}^{*}}
+\newcommand{\thetas}{{\theta}^{*}}
+
+                                   
+\begin{document}
+
+{\bf From Soulsby's book}
+
+\section{Total Shear Stress}
+Total shear stress induced by wave and currents can be calculated by (p92, (69))
+\be
+\tau_m = \tau_c \left[ 1+1.2\left(\frac{\tau_w}{\tau_c+\tau_w} \right)^{3.2} \right]
+\ee
+where $\tau_c$ and $\tau_w$ represent current and wave-induced shear stresses, respectively. 
+
+\section{Calculating $\tau_c$ and $\tau_w$}
+
+\subsection {$\tau_c$}
+For current-induced shear stress (p53, (30))
+\be
+\tau_c = \rho C_D \bar{U}^2
+\ee
+where $\bar{U}$ is depth-averaged velocity, and $C_D$ has two forms (p48):
+\be
+C_D=\alpha \left( \frac{z_0}{h} \right)^\beta
+\ee 
+and
+\be
+C_D = \left[ \frac{0.40}{1+\ln(z_0/h)}  \right]
+\ee
+The latter one may be popular one used in sediment transport formulas.  
+
+\subsection{$\tau_w$}
+
+In p76, (57):
+\be
+\tau_w = \frac{1}{2} \rho f_w U_w^2
+\ee
+where $U_w$ is wave orbital velocity amplitude.
+
+There are several formulas which can be used to calculate $f_w$
+Soulsby, p78, (62):
+\be
+f_{w} = 1.39 \left( \frac{A}{z_0} \right)^{-0.52}
+\ee
+and Swart (1974) which is used for example
+\ba
+&& f_{wr} =0.3  \ \ \ \ \  \mbox{for} r<1.57 \\
+&& f_{wr}=0.00251 \exp(5.21r^{-0.19})  \ \ \ \mbox{for} r>1.57
+\ea
+where $r = A/k_s$, in which $A$ is semi-orbital excursion ($U_wT/2\pi$) and $k_s = 30z_0$, Nikuradse equivalent sand grain roughness
+\be
+k_s =30 z_0 
+\ee
+
+ 
+\section{calculating roughness length $z_0$}
+
+ $z_0$ is total roughness length
+ \be
+ z_0=z_{0s} + z_{0f} + z_{0t}
+ \ee    
+in which $z_{0s},  z_{0f}$ and  $z_{0t}$ are roughness length corresponding to skin friction, form drag, and sediment transport (mobilization). 
+p48, (25)
+\be
+z_{0s} = d_{50}/12
+\ee
+For both wave/current generated ripples (p123, (90))
+\be
+z_{0f} = a_r \frac{\Delta_r^2}{\lambda_r}
+\ee
+where $\Delta_r$ and $\lambda_r$ are ripple height and length, respectively. 
+For current-only case, in p59, (42)
+\be
+z_{0t} = \frac{5 \tau_{0s}}{30 g (\rho_s -\rho)}
+\ee
+where $\tau_{0s}$ is skin-friction shear stress. 
+
+For wave generated ripples
+Nielsen's formula may be used (p124, (92)), 
+\be
+z_{0t} = 5.67 (\theta_{ws} - 0.05)^{0.5} d_{50}
+\ee
+where $\theta_{ws}$ is skin-friction Shields parameter. When using Nielsen's formula, ripple height and length have to be evaluated using p122 (89)
+and $a_r=0.269$. 
+
+
+\end{document}  

@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+
+\usepackage{times}
+\usepackage{amsbsy}
+
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+  
+\newcommand{\beq}{\begin{eqnarray}}
+\newcommand{\eeq}{\end{eqnarray}}
+\newcommand{\ba}{\begin{eqnarray}}
+\newcommand{\ea}{\end{eqnarray}}
+
+\newcommand{\ua}{{\bf u}_\alpha}
+\newcommand{\utwo}{\overline{\bf u}_2}
+
+
+\newcommand{\ubar}{\overline{u}}
+\newcommand{\vbar}{\overline{v}}
+\newcommand{\phis}{{\phi}^{*}}
+\newcommand{\thetas}{{\theta}^{*}}
+
+                                   
+\begin{document}
+
+{\bf Note on evaluation of momentum balance in NearCoM-TVD (Shi, 06/14/2016, 09/28/2016)}
+
+The conservative form of the momentum equations can be written as
+\ba
+\nonumber
+\frac{\partial JHu_\alpha}{\partial t} +  \frac{\partial }{\partial \xi^\beta} \left[ JP^\beta u_\alpha  +\frac{1}{2} g (\eta^2 +2 \eta h)  J L^\beta_\alpha \right] +J f_\alpha -  g \eta \frac{\partial }{\partial \xi^\beta} (h J L^\beta_\alpha)  \\
++ \frac{1}{\rho}   \frac{\partial }{\partial \xi^\gamma} (S_{\alpha \beta} J L^\gamma_\beta) 
++  \frac{\partial }{\partial \xi^\gamma} (\tau_{\alpha \beta} JHL^\gamma_\beta)
++ J \frac{\tau^b_\alpha}{\rho} -  J \frac{\tau^s_\alpha}{\rho} = 0 
+\label{conserv1}
+\ea
+Notice that the Jacobi value $J$ is inside each term and will be included in the momentum balance calculations. We define
+
+\ba
+\nonumber 
+\frac{\partial JHu_\alpha}{\partial t} &-& \mbox{local acceleration: ACCx, ACCy} \\
+\nonumber
+ \frac{\partial }{\partial \xi^\beta} \left[ JP^\beta u_\alpha  +\frac{1}{2} g (\eta^2 +2 \eta h)  J L^\beta_\alpha \right]  &-& \mbox{flux gradient: GRDFx, GRDFy}\\
+ \nonumber
+ J f_\alpha  &-& \mbox{Coriolis: CORIx, CORIy}\\
+ \nonumber
+ -  g \eta \frac{\partial }{\partial \xi^\beta} (h J L^\beta_\alpha)  &-& \mbox{slope term: GRDDx, GRDDy}\\
+ \nonumber
+ \frac{1}{\rho}   \frac{\partial }{\partial \xi^\gamma} (S_{\alpha \beta} J L^\gamma_\beta) &-& \mbox{wave forcing: WAVEx,WAVEy} \\
+ \nonumber
+  \frac{\partial }{\partial \xi^\gamma} (\tau_{\alpha \beta} JHL^\gamma_\beta) &-& \mbox{diffusion/dispersion term: DIFFx,DIFFy} \\
+  \nonumber 
+ J \frac{\tau^b_\alpha}{\rho}  &-& \mbox{bottom friction: FRCx, FRCy} \\
+ \nonumber 
+ -  J \frac{\tau^s_\alpha}{\rho}  &-& \mbox{wind stress: WINDx, WINDy} 
+\ea
+
+The momentum balance equations can be denoted as
+
+ACCx + GRDFx  + CORIx + GRDDx + WAVEx + DIFFx + FRCx + WINDx = 0
+
+ACCy + GRDFy  + CORIy + GRDDy + WAVEy + DIFFy + FRCy + WINDy = 0
+
+
+The conservative form of the momentum equations needed by the Riemann solver causes difficulties to explicitly evaluate the pressure gradient and advection. We denote the pressure gradient as (PREx,PREy), and advection as (ADVx, ADVy). The advection term (ADVx, ADVy) can be calculated directly using finite difference. Then the pressure gradient terms can be estimated using
+
+PREx = GRDFx - GRDDx - ADVx
+
+PREy = GRDFy - GRDDy - ADVy
+
+The final balance equations are
+
+
+ACCx + ADVx + PREx + CORIx + FRCx  + WAVEx + DIFFx +WINDx = 0
+
+ACCy + ADVy + PREy + CORIy + FRCy  + WAVEy + DIFFy +WINDy = 0
+
+To print out momentum balance terms, set -DMOMENTUM\_BALANCE in Makefile. The outputs are ACCx\_0001 ...
+
+{\bf update 09/28/2016}
+
+1) splitting ADVx into ADVxx and ADVxy, and ADVy into ADVyx and ADVyy. 
+
+\be
+\mbox{ADVx} = \frac{\partial J P u}{\partial \xi^1} +  \frac{\partial J Q u}{\partial \xi^2}  = \mbox{ADVxx + ADVxy}
+\ee
+
+\be
+\mbox{ADVy} = \frac{\partial J P v}{\partial \xi^1} +  \frac{\partial J Q v}{\partial \xi^2}  = \mbox{ADVyx + ADVyy}
+\ee
+in the code $(P, Q)$ represent $(P^1, P^2)$ and $\xi^1=\xi^2 = 1$.  Corresponding output files are advxx\_0001 ... 
+
+2) add an option which prints out all terms without the Jacobean $J$. It is done by dividing all terms by $J$. This is an approximate approach because of ignoring the spatial gradient of $J$. The idealized inlet case shows the effect of the $J$ gradient is minimal.  
+
+
+
+
+\end{document}  
