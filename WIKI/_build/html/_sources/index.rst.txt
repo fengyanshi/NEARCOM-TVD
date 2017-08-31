@@ -6,12 +6,7 @@
 NEARCOM-TVD
 ========================================
 
-.. figure:: figures/nearcomtitlebig.gif
-    :width: 700px
-    :align: center
-    :height: 120px
-    :alt: alternate text
-    :figclass: align-center
+.. image:: figures/nearcomtitlebig.jpg
 
 .. toctree::
    :maxdepth: 2
