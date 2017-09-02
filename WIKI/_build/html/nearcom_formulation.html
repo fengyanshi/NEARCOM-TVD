@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Formulations &#8212; NearCoM_WIKI 1.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -24,6 +21,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="What is NearCoM" href="nearcom_history.html" />
@@ -34,7 +32,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -43,8 +41,95 @@
           <div class="body" role="main">
             
   <div class="section" id="formulations">
-<h1>Formulations<a class="headerlink" href="#formulations" title="Permalink to this headline">¶</a></h1>
-<p>im tingting</p>
+<h1><strong>Formulations</strong><a class="headerlink" href="#formulations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="shorecirc-equations">
+<h2>SHORECIRC equations<a class="headerlink" href="#shorecirc-equations" title="Permalink to this headline">¶</a></h2>
+<p>SHORECIRC is a quasi-3D nearshore circulation model for prediction of wave-induced nearshore circulation.
+It is a 2D horizontal model which incorporates the effect of the vertical structure of horizontal flows.
+In Putrevu and Svendsen (1999), the instantaneous horizontal velocity is split as</p>
+<div class="math" id="equation-nearcom_formulation:0">
+<span class="eqno">(1)<a class="headerlink" href="#equation-nearcom_formulation:0" title="Permalink to this equation">¶</a></span>\[u^{ins}_{\alpha}=u^{\prime}_{\alpha}+u_{w\alpha}+u_{\alpha}+u_{1\alpha}\]</div>
+<p>where <span class="math">\(u^{\prime}_{\alpha}, u_{w\alpha}, u_{\alpha}\)</span> and <span class="math">\(u_{1 \alpha}\)</span> are, respectively, the turbulence component, the wave component, the component of depth-averaged and short-wave-averaged velocity, and the vertical variation of the short-wave-averaged velocity.
+The complete SHORECIRC equations can be expressed in the Cartesian form as in Svendsen et al. (2003) or in the curvilinear form in Shi et al. (2003). In this section, we derive a conservative form of the equations in generalized curvilinear coordinates in order to use the TVD numerical scheme.</p>
+<p>SHORECIRC equations in Cartesian coordinates <span class="math">\((x_1, x_2)\)</span> can be expressed as</p>
+<div class="math" id="equation-nearcom_formulation:1">
+<span class="eqno">(2)<a class="headerlink" href="#equation-nearcom_formulation:1" title="Permalink to this equation">¶</a></span>\[\frac{\partial \eta}{\partial t}+\frac{\partial Hu_\alpha}{\partial x_\alpha} =0\]</div>
+<div class="math" id="equation-euler">
+<span class="eqno">(3)<a class="headerlink" href="#equation-euler" title="Permalink to this equation">¶</a></span>\[\frac{\partial H u_\alpha}{\partial t} + \frac{Hu_\alpha u_\beta}{\partial x_\beta} +f_{\alpha}+ g H \frac{\partial \eta}{\partial x_\alpha} + \frac{1}{\rho} \frac{\partial T_{\alpha \beta}}{\partial x_\beta} + \frac{1}{\rho} \frac{\partial S_{\alpha \beta}}{\partial x_\beta}  + \frac{\tau^b_\alpha}{\rho} - \frac{\tau^s_\alpha}{\rho} + \mbox{ROT}= 0\]</div>
+<p>where <span class="math">\(\eta\)</span> represents the wave-averaged surface elevation, <span class="math">\(H = \eta + h\)</span>, in which <span class="math">\(h\)</span> is still water depth. The depth-averaged and wave-averaged velocity <span class="math">\(u_\alpha\)</span> is defined by the ‘Lagrangian’ averaging as</p>
+<div class="math" id="equation-nearcom_formulation:2">
+<span class="eqno">(4)<a class="headerlink" href="#equation-nearcom_formulation:2" title="Permalink to this equation">¶</a></span>\[u_{\alpha} = \frac{1}{H} \overline{\int_{-h}^\zeta u^{ins}_\alpha}\]</div>
+<p>where <span class="math">\(\zeta\)</span> is the instantaneous surface elevation. This split is different from Haas et al. (2003) who used the ‘Eulerian’ concept for their split. For the Lagrangian averaging method, it is assumed that</p>
+<div class="math" id="equation-nearcom_formulation:3">
+<span class="eqno">(5)<a class="headerlink" href="#equation-nearcom_formulation:3" title="Permalink to this equation">¶</a></span>\[{\int}_{-h}^\eta u_{1\alpha} dz = - Q_{w \alpha}\]</div>
+<p>where <span class="math">\(Q_{w \alpha}\)</span> is the short wave flux.</p>
+<p>In <a class="reference internal" href="#equation-euler">(3)</a>, <span class="math">\(f_\alpha\)</span> represents the Coriolis force which was not considered in the previous SHORECIRC equations (Putrevu and Svendsen, 1999).
+<span class="math">\(T_{\alpha \beta}, S_{\alpha \beta}, {\tau}^{s}_{\alpha}\)</span> and  <span class="math">\({\tau}^{b}_{\alpha}\)</span> are the depth-integrated Reynolds’ stress, the wave-induced radiation stress (Longuet-Higgins and Stewart, 1962, 1964), the surface shear stress and the bottom shear stress, respectively.
+ROT represents the rest of terms associated with 3D dispersion terms which are not presented here because they do not involve the coordinate transformation conducted below.
+Interested readers are referred to Putrevu and Svendsen (1999).</p>
+<p>A curvilinear coordinate transformation is introduced in the general form</p>
+<div class="math" id="equation-nearcom_formulation:4">
+<span class="eqno">(6)<a class="headerlink" href="#equation-nearcom_formulation:4" title="Permalink to this equation">¶</a></span>\[xi^1 = \xi^1 (x_1,x_2), \ \ \ \   \xi^2 = \xi^2 (x_1,x_2)\]</div>
+<p>where <span class="math">\((\xi^1, \xi^2)\)</span> are the curvilinear coordinates.
+We use superscript indices, i.e., <span class="math">\(()^\alpha\)</span>, to represent the contravariant component and subscript indices for the Cartesian component  of a vector.
+The relation between the Cartesian component <span class="math">\(u_\alpha\)</span> and the contravarient component <span class="math">\(u^\alpha\)</span> can be written, by definition, as</p>
+<div class="math" id="equation-nearcom_formulation:5">
+<span class="eqno">(7)<a class="headerlink" href="#equation-nearcom_formulation:5" title="Permalink to this equation">¶</a></span>\[u^\alpha = u_\beta L^\alpha_\beta\]</div>
+<p>where</p>
+<div class="math" id="equation-nearcom_formulation:6">
+<span class="eqno">(8)<a class="headerlink" href="#equation-nearcom_formulation:6" title="Permalink to this equation">¶</a></span>\[L^\alpha_\beta = \frac{\partial \xi^\alpha}{\partial x_\beta}\]</div>
+<p>Using the chain rule, the derivative of a function <span class="math">\(F\)</span> with respect to <span class="math">\(x_\alpha\)</span> in the Cartesian coordinates can be expressed in the curvilinear coordinates <span class="math">\(\xi^\alpha\)</span> by</p>
+<div class="math" id="equation-der">
+<span class="eqno">(9)<a class="headerlink" href="#equation-der" title="Permalink to this equation">¶</a></span>\[\frac{\partial F}{\partial x_\alpha} = L^\beta_\alpha \frac{\partial F}{\partial \xi^\beta}\]</div>
+<p>Using the metric identity law (Thompson et al., 1985):</p>
+<div class="math" id="equation-nearcom_formulation:7">
+<span class="eqno">(10)<a class="headerlink" href="#equation-nearcom_formulation:7" title="Permalink to this equation">¶</a></span>\[\frac{\partial}{\partial \xi^\alpha}(J L^\alpha_\beta) \equiv 0\]</div>
+<p><a class="reference internal" href="#equation-der">(9)</a> can be rewritten in a different form as</p>
+<div class="math" id="equation-der2">
+<span class="eqno">(11)<a class="headerlink" href="#equation-der2" title="Permalink to this equation">¶</a></span>\[\frac{\partial F}{\partial x_\alpha} = \frac{1}{J} \frac{\partial F J L^\beta_\alpha}{\partial \xi^\beta}\]</div>
+<p>Using <a class="reference internal" href="#equation-der2">(11)</a>, the conservative form of SHORECIRC equations in curvilinear coordinates can be derived as</p>
+<div class="math" id="equation-mass1">
+<span class="eqno">(12)<a class="headerlink" href="#equation-mass1" title="Permalink to this equation">¶</a></span>\[frac{\partial \eta}{\partial t} + \frac{1}{J}\frac{\partial J P^\alpha}{\partial \xi^\alpha} = 0\]</div>
+<div class="math" id="equation-conserv1">
+<span class="eqno">(13)<a class="headerlink" href="#equation-conserv1" title="Permalink to this equation">¶</a></span>\[\begin{split}&amp; \frac{\partial Hu_\alpha}{\partial t} + \frac{1}{J} \frac{\partial }{\partial \xi^\beta} \left[ JP^\beta u_\alpha  +\frac{1}{2} g (\eta^2 +2 \eta h)  J L^\beta_\alpha \right] +f_\alpha -  g \eta \frac{1}{J}  \frac{\partial }{\partial \xi^\beta} (h J L^\beta_\alpha) \\
+       &amp; + \frac{1}{\rho} \frac{1}{J}  \frac{\partial }{\partial \xi^\gamma} (S_{\alpha \beta} J L^\gamma_\beta) + \frac{1}{J}  \frac{\partial }{\partial \xi^\gamma} (\tau_{\alpha \beta} JHL^\gamma_\beta)+ \frac{\tau^b_\alpha}{\rho} - \frac{\tau^s_\alpha}{\rho} + \mbox{ROT} = 0\end{split}\]</div>
+<p>Note that  equations <a class="reference internal" href="#equation-mass1">(12)</a> and <a class="reference internal" href="#equation-conserv1">(13)</a> contain both the Cartesian and contravariant variables, which are different from the contravariant-only form in Shi et al., (2003).
+A difficulty in deriving the conservative form of the momentum equations using contravariant-only variables has be noticed by several authors (e.g., xxx) in shallow water applications.
+Here, we follow Shi and Sun (1995) who used both Cartesian and contravariant variables in the derivation of the momentum equations.</p>
+<p>In <a class="reference internal" href="#equation-mass1">(12)</a> and <a class="reference internal" href="#equation-conserv1">(13)</a>, <span class="math">\(P^\alpha = H u^\alpha\)</span>, denotes the contravariant component of volume flux, the Coriolis force <span class="math">\(f_\alpha\)</span> uses the Cartesian components, i.e., <span class="math">\((-f H v,  fH u)\)</span>, <span class="math">\(S_{\alpha \beta}\)</span> represents the Cartesian component of radiation stress.
+In the present application, the gradient of radiation stresses (the fifth term of <a class="reference internal" href="#equation-conserv1">(13)</a>) is obtained directly from the wave module SWAN.
+<span class="math">\(\tau_{\alpha \beta}\)</span> represents the Cartesian component of turbulent shear stress, <span class="math">\(\tau^b_\alpha\)</span> and <span class="math">\(\tau^s_\alpha\)</span> are the Cartesian components of bottom stress and wind stress.</p>
+<p>In the derivation of the momentum equations, the surface gradient term is treated following Shi et al. (2011) who reorganized this term in order to make it well-balanced in a MUSCL-TVD scheme for a general order.
+The  expression in curvilinear coordinates can be written as</p>
+<div class="math" id="equation-nearcom_formulation:8">
+<span class="eqno">(14)<a class="headerlink" href="#equation-nearcom_formulation:8" title="Permalink to this equation">¶</a></span>\[-gHJ\frac{\partial \eta}{\partial x_\alpha} = -\frac{\partial }{\partial \xi^\alpha} \left [\frac{1}{2} g (\eta^2 +2 \eta h) J L^\alpha_\beta \right] + g \eta \frac{\partial }{\partial \xi^\alpha} (h J L^\alpha_\beta)\]</div>
+<p>There are several advantages in using equations <a class="reference internal" href="#equation-mass1">(12)</a> and <a class="reference internal" href="#equation-conserv1">(13)</a> versus the contravariant-only form in Shi et al. (2003).
+First, they are a conservative form which can be implemented  using a hybrid numerical scheme. Second, all forcing terms resume to a vector form  in Cartesian coordinates in contrast to the contravariant form in Shi et al. (2003).
+Third, the radiation stress term <span class="math">\(S_{\alpha \beta}\)</span> uses the original form defined in Cartesian coordinates, thus that  there is no need to make a transformation for the second-order tensor.
+The disadvantage is that <a class="reference internal" href="#equation-conserv1">(13)</a> contains both the Cartesian component <span class="math">\(u_\alpha\)</span> and the contravariant component <span class="math">\(P^\alpha\)</span>.
+However, in terms of the hybrid numerical  scheme used in the study, it is convenient to solve both of the two variables using the explicit numerical scheme, rather than  the implicit numerical scheme used  in Shi et al., (2007).</p>
+<p>Wind stress in SHORECIRC was computed using Van Dorn’s (1953) formula:</p>
+<div class="math" id="equation-nearcom_formulation:9">
+<span class="eqno">(15)<a class="headerlink" href="#equation-nearcom_formulation:9" title="Permalink to this equation">¶</a></span>\[\tau^s_\alpha = f_a \rho_a |{\bf W}| W_{\alpha}\]</div>
+<p>where <span class="math">\({\bf W}\)</span> is wind speed at a 10 <span class="math">\(m\)</span> elevation above the water surface, <span class="math">\(f_a\)</span> is the drag coefficient which can be found in Dean and Dalrymple (1991). <span class="math">\(\rho_a\)</span> represents air density.
+For the bottom stress in SHORECRC, we adopted the formulation for wave-averaged bottom stress for combined currents and waves given by Svendsen and Putrevu (1990) which is written as</p>
+<div class="math" id="equation-nearcom_formulation:10">
+<span class="eqno">(16)<a class="headerlink" href="#equation-nearcom_formulation:10" title="Permalink to this equation">¶</a></span>\[\tau^b_\alpha = f_{cw} \rho u_0 (\beta_1 u_{b \alpha} +\beta_2 U_{w \alpha})\]</div>
+<p>where <span class="math">\(U_{w \alpha}\)</span> is the amplitude of short-wave particle velocity evaluated at the bottom using wave bulk parameters, <span class="math">\(f_{cw}\)</span> is the friction factor, <span class="math">\(u_{b\alpha}\)</span> is the current velocity at the bottom obtained from the theoretical solution of the equation for the vertical variation, <span class="math">\(\beta_1\)</span> and <span class="math">\(\beta_2\)</span> are  the weight factors for the current and wave motion given by Svendsen and Putrevu (1990) and evaluated using  linear wave theory.</p>
+<p>The equation governing the vertical structure of horizontal velocity can be solved analytically using the lowest order of the equation for vertical variation of current:</p>
+<div class="math" id="equation-vertical">
+<span class="eqno">(17)<a class="headerlink" href="#equation-vertical" title="Permalink to this equation">¶</a></span>\[\frac{\partial u_{1\alpha}}{\partial t} -\frac{\partial }{\partial z} \left( \nu_t \frac{\partial u_{1\alpha}}{\partial z}\right) = F_\alpha\]</div>
+<p>where <span class="math">\(\nu_t\)</span> is the eddy viscosity coefficient; and <span class="math">\(F_\alpha\)</span> is a general form of the local forcing described as</p>
+<div class="math" id="equation-f1">
+<span class="eqno">(18)<a class="headerlink" href="#equation-f1" title="Permalink to this equation">¶</a></span>\[F_\alpha = \frac{1}{\rho h} f_{w\alpha} - f^{lrad}_\alpha + \frac{\tau^b_\alpha}{\rho h} - \frac{\tau^s_\alpha}{\rho h}\]</div>
+<p>where <span class="math">\(f_\alpha^{lrad}\)</span> represents the local radiation stress defined by Putrevu and Svendsen (1999). In the offshore domain without wave forcing, <a class="reference internal" href="#equation-f1">(18)</a> reduces to</p>
+<div class="math" id="equation-f2">
+<span class="eqno">(19)<a class="headerlink" href="#equation-f2" title="Permalink to this equation">¶</a></span>\[F^\alpha =  \frac{\tau^b_\alpha}{\rho h} - \frac{\tau^s_\alpha}{\rho h}\]</div>
+<p>The solution of equation <a class="reference internal" href="#equation-vertical">(17)</a> can be solved analytically following Putrevu and Svendsen (1999).
+The bottom current velocity <span class="math">\(u_{b \alpha}\)</span> can be evaluated using <span class="math">\(u_\alpha\)</span> and <span class="math">\(u_{1\alpha}\)</span> at bottom:</p>
+<div class="math" id="equation-nearcom_formulation:11">
+<span class="eqno">(20)<a class="headerlink" href="#equation-nearcom_formulation:11" title="Permalink to this equation">¶</a></span>\[u_{b \alpha} = u_\alpha + u_{1\alpha} (z=-h)\]</div>
+</div>
 </div>
 
 
@@ -52,11 +137,19 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><strong>Formulations</strong></a><ul>
+<li><a class="reference internal" href="#shorecirc-equations">SHORECIRC equations</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="nearcom_history.html" title="previous chapter">What is NearCoM</a></li>
+      <li>Previous: <a href="nearcom_history.html" title="previous chapter"><strong>What is NearCoM</strong></a></li>
   </ul></li>
 </ul>
 </div>
@@ -85,8 +178,8 @@
       &copy;2017, Fengyan Shi.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/nearcom_formulation.rst.txt"

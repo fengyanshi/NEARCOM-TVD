@@ -1,5 +1,6 @@
-What is NearCoM
-=================
+﻿*************************
+**What is NearCoM**
+*************************
 
 * History of NearCoM model development
 
