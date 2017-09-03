@@ -123,4 +123,157 @@ The bottom current velocity :math:`u_{b \alpha}` can be evaluated using :math:`u
 
 .. math:: u_{b \alpha} = u_\alpha + u_{1\alpha} (z=-h)
 
+
+
+
+
+SWAN equations
+#########################
+
+In this section, we briefly summarize equations used in SWAN. Detailed documentation is referred to SWAN Users' Manual at http://swanmodel.sourceforge.net/. 
+
+The spectral wave model SWAN (Booij et al., 1999, Ris et al., 1999) solves the wave action balance equation. In generalized curvilinear coordinates, the governing equation reads
+
+.. math:: \frac{\partial N}{\partial t} + \frac{1}{J}\frac{\partial (JC_g^\alpha)}{\partial \xi_\alpha} + \frac{\partial (C_{g\sigma}N)}{\partial \sigma} + \frac{\partial (C_{g\theta}N)}{\partial \theta} = \frac{S}{\sigma}
+   :label: eq_action
+
+where :math:`\xi_\alpha` represents curvilinear coordinates defined as the same as in the curvilinear SHORECIRC equations; 
+:math:`\sigma` is the relative angular frequency; :math:`\theta` is propagation direction of each wave component; :math:`C_g^\alpha` represents contravariant component of the energy propagation speed  which can be obtained using coordinate transformation:
+
+.. math:: C_g^\alpha = C_{g\beta} L^\alpha_\beta
+
+in which :math:`C_{g_\beta} = (C_{gx}, C_{gy})` in the rectangular Cartesian coordinates.  
+Equation :eq:`eq_action` is written in a tensor-invariant form in order to make it consistent with the circulation equations. The extended numerical form  can be found in Booij et al. (1997).
+:math:`C_{g\sigma}` and :math:`C_{g \theta}` denote energy propagation speeds in the  :math:`\sigma` and :math:`\theta`-spaces, respectively; :math:`S` represents source and sink term in terms of energy density representing the effects of wave generation, dissipation and nonlinear wave-wave interactions; :math:`N` is wave action defined by
+
+.. math:: N = E (\xi^\alpha, \sigma,\theta, t) / \sigma
+
+in which :math:`E` is wave energy density. 
+
+Current effects on wave transformation are presented by the following calculations:
+
+1.total group velocity including the current component
+
+.. math:: C_{g\alpha} = \frac{1}{2}\left( 1+ \frac{2kd}{\sinh2kd}\right)\frac{\sigma k_\alpha}{|{\bf k}|^2} + u_{E\alpha}
+
+where :math:`k_\alpha` or :math:`{\bf k}` represent wave number, :math:`d` is short-wave-averaged water depth, and :math:`d = h + \eta`.  
+:math:`u_{E\alpha} = u_\alpha-Q_{w\alpha}/H` in terms of undertow or Eulerian mean velocity. 
+
+2.changes to relative frequency
+
+.. math:: C_\sigma = \frac{\partial \sigma}{\partial d}\left( \frac{\partial d}{\partial t} + {\bf u_E} \cdot \nabla d\right) -C_g \bf{k}\cdot \frac{\partial {\bf u_E}} {\partial {\it s}}
+
+3.wave refraction by current included in
+
+.. math:: C_\theta = - \frac{1}{k} \left( \frac{\partial \sigma}{\partial d} \frac{\partial d}{\partial m} +\bf{k}\cdot \frac{\partial {\bf u_E} }{\partial  {\it m} } \right)
+
+where :math:`s` is the space coordinate in direction :math:`\theta` and :math:`m` is a coordinate normal to :math:`s`.
+
+
+
+
+
+Soulsby's sediment transport formula
+##############################################
+
+The total load transport by waves plus currents derived by  Soulsby's (1997) can be written as
+
+.. math:: q_\alpha = A_s z u_\alpha \left[  \left( u_\alpha^2 + \frac{0.018}{C_d} u_{rms}^2 \right)^{1/2} - u_\alpha^{cr} \right]^{2.4} (1-1.6\tan \beta)
+
+where   
+
+.. math:: A_{sb} = \frac{0.005 h (d_{50}/d)^{1.2}}{\left[ (s-1)g d_{50}\right]^{1.2}}
+
+.. math:: A_{ss} = \frac{0.012 d_{50}D_*^{-0.6}}{\left[ (s-1)g d_{50}\right]^{1.2}}
+
+.. math:: A_s = A_{sb} + A_{ss}
+
+:math:`u_{rms}` is root-mean-square wave orbital velocity; :math:`C_d` is drag coefficient due to current alone; :math:`u_\alpha^{cr}` represents threshold current velocity given by Van Rijn (1984); :math:`\beta` is the slope of bed in streamwise direction; :math:`s` is the specific gravity; and
+
+.. math:: D_* = \left[ \frac{g(s-1)}{\nu} \right]^{1/3} d_{50}
+
+
+
+
+
+
+Kobayashi's sediment transport formula
+##############################################
+
+Kobayashi et al. (2007) recently proposed sediment transport formulas for the cross-shore and longshore transport rates of suspended sand and bedload on beaches based on laboratory experiment and field data. 
+For suspended sand, the suspended sediment volume :math:`V_s` per unit horizontal bottom area was introduced as
+
+.. math:: V_s = P_s \frac{e_B D_r + e_f D_f}{\rho g (s-1) w_f} (1+S_b^2)^{0.5}
+
+where :math:`S_b` is cross-shore bottom slope; :math:`e_B` and :math:`e_f` are suspension efficiencies for energy dissipation rates :math:`D_r` and :math:`D_f` due to wave breaking and bottom friction, respectively. 
+:math:`w_f` is the sediment fall velocity; :math:`P_s` is the probability of sediment suspension formulated in Kobayashi et al. (2007). 
+The corresponding cross-shore and alongshore suspended sediment transport rates may be expressed as
+
+.. math:: q_{sc} = a \bar{U}_c V_s; \ \ \ \ \ \ q_{sl} = \bar{V}_l V_s
+   :label: qs
+
+where :math:`a` is empirical suspended load parameter; :math:`\bar{U}_c` is the Eulerian-mean cross-shore current which consists of wave-induced return flow (undertow) and tidal current in the cross-shore direction; :math:`\bar{V}_c` is alongshore current which includes wave-induced alongshore current and tidal current in the alongshore direction. 
+Subscriptions :math:`c` and :math:`l` represent cross-shore and longshore, respectively (hereafter).  
+
+In Kobayashi et al., the vector (:math:`\bar{U}_c, \bar{V}_l`) is defined specifically in cross-shore/alongshore directions which may not be appropriate for general 2-D applications, especially for complex coastal geometry. 
+Here, we define :math:`\vec{\bar{V}} = (\bar{U},\bar{V})` as the Eulerian-mean current  vector in general Cartesian coordinates  which may not be restricted to the cross-shore/alongshore orientation.
+Thus formula :eq:`qs` can be written in a general form using coordinate rotation as
+
+.. math:: q_{sx} =( a \bar{U} \cos^2 \alpha + a \bar{V} \sin \alpha \cos \alpha + \bar{U} \sin^2 \alpha -\bar{V}\sin \alpha \cos \alpha) V_s
+
+.. math:: q_{sy} = (a \bar{V} \sin^2 \alpha + a \bar{U} \sin \alpha \cos \alpha + \bar{V} \cos^2 \alpha -\bar{U}\sin \alpha \cos \alpha) V_s
+
+in which :math:`\alpha` is an angle between :math:`x-` axis and beach-normal direction as shown in :numref:`beach_angle`.
+
+.. figure:: figures/beach_direction.jpg
+   :name: beach_angle
+   :scale: 40 %
+   :align: center
    
+   Definition of an angle between :math:`x-` axis and beach-normal direction.
+   
+
+The bedload transport rates can be expressed as
+
+.. math:: q_{bc} = \frac{b P_b}{g (s-1)} \sigma^3_T (1+ U_* V_*^2 +2 F_m \sin \theta) G_s
+
+.. math:: q_{bl} = \frac{b P_b}{g (s-1)} \sigma^3_T \left[ V_* (1+U^2_* + V^2_*) -2 r_m \sin \theta \right ]
+
+where :math:`b` is empirical bedload parameter; :math:`\sigma_T` is standard deviation of the oscillatory depth-averaged velocity with zero mean; :math:`(U_*, V_*) = (\bar{U}_c/\sigma_T, \bar{V}_l/\sigma_T)`; :math:`\theta` is wave angle; and 
+
+.. math:: r_m = -(U_*\cos \theta + V_* \sin \theta)
+
+.. math:: F_m = V_* \cos \theta - U_* \sin \theta
+
+:math:`G_s` is the bottom slope function expressed by
+
+.. math::
+   \begin{array}{l l l}
+      G_s = \tan \phi /(\tan \phi + S_b)  &  \mbox{for}  &  -\tan \phi < S_b < 0 \\
+      G_s = (\tan \phi -2 S_b) /(\tan \phi -S_b)  & \mbox{for} & 0 < S_b < \tan \phi
+    \end{array} 
+
+in which :math:`\phi` is the angle of internal friction of the sediment and :math:`\tan \phi \simeq 0.63` for sand.
+  
+  In a general Cartesian system, (:math:`q_{bc}, q_{bl}`) are converted to (:math:`q_{bx}, q_{bl}`) using
+
+.. math:: q_{bx} = q_{bc} \cos \alpha - q_{bl} \sin \alpha,  \ \ \ \ \ \  q_{by} = q_{bc} \sin \alpha + q_{bl} \cos \alpha
+
+
+
+
+
+Seabed evolution equation
+##################################
+
+The sea bed evolution equation can be described using sediment transport flux in generalized curvilinear coordinates:
+
+.. math:: (1-p) \frac{\partial h}{\partial t} + \frac{1}{J} \frac{\partial J f_{mor} q_\beta L^\alpha_\beta}{\partial \xi^\alpha} = 0
+   :\label: bed
+
+where :math:`p` is the bed porosity, :math:`f_{mor}` represents a morphology factor. :eq:`bed` is solved using the same TVD scheme as in SHORECIRC.  
+
+
+
+
+

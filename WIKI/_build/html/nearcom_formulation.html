@@ -130,6 +130,106 @@ The bottom current velocity <span class="math">\(u_{b \alpha}\)</span> can be ev
 <div class="math" id="equation-nearcom_formulation:11">
 <span class="eqno">(20)<a class="headerlink" href="#equation-nearcom_formulation:11" title="Permalink to this equation">¶</a></span>\[u_{b \alpha} = u_\alpha + u_{1\alpha} (z=-h)\]</div>
 </div>
+<div class="section" id="swan-equations">
+<h2>SWAN equations<a class="headerlink" href="#swan-equations" title="Permalink to this headline">¶</a></h2>
+<p>In this section, we briefly summarize equations used in SWAN. Detailed documentation is referred to SWAN Users’ Manual at <a class="reference external" href="http://swanmodel.sourceforge.net/">http://swanmodel.sourceforge.net/</a>.</p>
+<p>The spectral wave model SWAN (Booij et al., 1999, Ris et al., 1999) solves the wave action balance equation. In generalized curvilinear coordinates, the governing equation reads</p>
+<div class="math" id="equation-eq_action">
+<span class="eqno">(21)<a class="headerlink" href="#equation-eq_action" title="Permalink to this equation">¶</a></span>\[\frac{\partial N}{\partial t} + \frac{1}{J}\frac{\partial (JC_g^\alpha)}{\partial \xi_\alpha} + \frac{\partial (C_{g\sigma}N)}{\partial \sigma} + \frac{\partial (C_{g\theta}N)}{\partial \theta} = \frac{S}{\sigma}\]</div>
+<p>where <span class="math">\(\xi_\alpha\)</span> represents curvilinear coordinates defined as the same as in the curvilinear SHORECIRC equations;
+<span class="math">\(\sigma\)</span> is the relative angular frequency; <span class="math">\(\theta\)</span> is propagation direction of each wave component; <span class="math">\(C_g^\alpha\)</span> represents contravariant component of the energy propagation speed  which can be obtained using coordinate transformation:</p>
+<div class="math" id="equation-nearcom_formulation:12">
+<span class="eqno">(22)<a class="headerlink" href="#equation-nearcom_formulation:12" title="Permalink to this equation">¶</a></span>\[C_g^\alpha = C_{g\beta} L^\alpha_\beta\]</div>
+<p>in which <span class="math">\(C_{g_\beta} = (C_{gx}, C_{gy})\)</span> in the rectangular Cartesian coordinates.
+Equation <a class="reference internal" href="#equation-eq_action">(21)</a> is written in a tensor-invariant form in order to make it consistent with the circulation equations. The extended numerical form  can be found in Booij et al. (1997).
+<span class="math">\(C_{g\sigma}\)</span> and <span class="math">\(C_{g \theta}\)</span> denote energy propagation speeds in the  <span class="math">\(\sigma\)</span> and <span class="math">\(\theta\)</span>-spaces, respectively; <span class="math">\(S\)</span> represents source and sink term in terms of energy density representing the effects of wave generation, dissipation and nonlinear wave-wave interactions; <span class="math">\(N\)</span> is wave action defined by</p>
+<div class="math" id="equation-nearcom_formulation:13">
+<span class="eqno">(23)<a class="headerlink" href="#equation-nearcom_formulation:13" title="Permalink to this equation">¶</a></span>\[N = E (\xi^\alpha, \sigma,\theta, t) / \sigma\]</div>
+<p>in which <span class="math">\(E\)</span> is wave energy density.</p>
+<p>Current effects on wave transformation are presented by the following calculations:</p>
+<p>1.total group velocity including the current component</p>
+<div class="math" id="equation-nearcom_formulation:14">
+<span class="eqno">(24)<a class="headerlink" href="#equation-nearcom_formulation:14" title="Permalink to this equation">¶</a></span>\[C_{g\alpha} = \frac{1}{2}\left( 1+ \frac{2kd}{\sinh2kd}\right)\frac{\sigma k_\alpha}{|{\bf k}|^2} + u_{E\alpha}\]</div>
+<p>where <span class="math">\(k_\alpha\)</span> or <span class="math">\({\bf k}\)</span> represent wave number, <span class="math">\(d\)</span> is short-wave-averaged water depth, and <span class="math">\(d = h + \eta\)</span>.
+<span class="math">\(u_{E\alpha} = u_\alpha-Q_{w\alpha}/H\)</span> in terms of undertow or Eulerian mean velocity.</p>
+<p>2.changes to relative frequency</p>
+<div class="math" id="equation-nearcom_formulation:15">
+<span class="eqno">(25)<a class="headerlink" href="#equation-nearcom_formulation:15" title="Permalink to this equation">¶</a></span>\[C_\sigma = \frac{\partial \sigma}{\partial d}\left( \frac{\partial d}{\partial t} + {\bf u_E} \cdot \nabla d\right) -C_g \bf{k}\cdot \frac{\partial {\bf u_E}} {\partial {\it s}}\]</div>
+<p>3.wave refraction by current included in</p>
+<div class="math" id="equation-nearcom_formulation:16">
+<span class="eqno">(26)<a class="headerlink" href="#equation-nearcom_formulation:16" title="Permalink to this equation">¶</a></span>\[C_\theta = - \frac{1}{k} \left( \frac{\partial \sigma}{\partial d} \frac{\partial d}{\partial m} +\bf{k}\cdot \frac{\partial {\bf u_E} }{\partial  {\it m} } \right)\]</div>
+<p>where <span class="math">\(s\)</span> is the space coordinate in direction <span class="math">\(\theta\)</span> and <span class="math">\(m\)</span> is a coordinate normal to <span class="math">\(s\)</span>.</p>
+</div>
+<div class="section" id="soulsby-s-sediment-transport-formula">
+<h2>Soulsby’s sediment transport formula<a class="headerlink" href="#soulsby-s-sediment-transport-formula" title="Permalink to this headline">¶</a></h2>
+<p>The total load transport by waves plus currents derived by  Soulsby’s (1997) can be written as</p>
+<div class="math" id="equation-nearcom_formulation:17">
+<span class="eqno">(27)<a class="headerlink" href="#equation-nearcom_formulation:17" title="Permalink to this equation">¶</a></span>\[q_\alpha = A_s z u_\alpha \left[  \left( u_\alpha^2 + \frac{0.018}{C_d} u_{rms}^2 \right)^{1/2} - u_\alpha^{cr} \right]^{2.4} (1-1.6\tan \beta)\]</div>
+<p>where</p>
+<div class="math" id="equation-nearcom_formulation:18">
+<span class="eqno">(28)<a class="headerlink" href="#equation-nearcom_formulation:18" title="Permalink to this equation">¶</a></span>\[A_{sb} = \frac{0.005 h (d_{50}/d)^{1.2}}{\left[ (s-1)g d_{50}\right]^{1.2}}\]</div>
+<div class="math" id="equation-nearcom_formulation:19">
+<span class="eqno">(29)<a class="headerlink" href="#equation-nearcom_formulation:19" title="Permalink to this equation">¶</a></span>\[A_{ss} = \frac{0.012 d_{50}D_*^{-0.6}}{\left[ (s-1)g d_{50}\right]^{1.2}}\]</div>
+<div class="math" id="equation-nearcom_formulation:20">
+<span class="eqno">(30)<a class="headerlink" href="#equation-nearcom_formulation:20" title="Permalink to this equation">¶</a></span>\[A_s = A_{sb} + A_{ss}\]</div>
+<p><span class="math">\(u_{rms}\)</span> is root-mean-square wave orbital velocity; <span class="math">\(C_d\)</span> is drag coefficient due to current alone; <span class="math">\(u_\alpha^{cr}\)</span> represents threshold current velocity given by Van Rijn (1984); <span class="math">\(\beta\)</span> is the slope of bed in streamwise direction; <span class="math">\(s\)</span> is the specific gravity; and</p>
+<div class="math" id="equation-nearcom_formulation:21">
+<span class="eqno">(31)<a class="headerlink" href="#equation-nearcom_formulation:21" title="Permalink to this equation">¶</a></span>\[D_* = \left[ \frac{g(s-1)}{\nu} \right]^{1/3} d_{50}\]</div>
+</div>
+<div class="section" id="kobayashi-s-sediment-transport-formula">
+<h2>Kobayashi’s sediment transport formula<a class="headerlink" href="#kobayashi-s-sediment-transport-formula" title="Permalink to this headline">¶</a></h2>
+<p>Kobayashi et al. (2007) recently proposed sediment transport formulas for the cross-shore and longshore transport rates of suspended sand and bedload on beaches based on laboratory experiment and field data.
+For suspended sand, the suspended sediment volume <span class="math">\(V_s\)</span> per unit horizontal bottom area was introduced as</p>
+<div class="math" id="equation-nearcom_formulation:22">
+<span class="eqno">(32)<a class="headerlink" href="#equation-nearcom_formulation:22" title="Permalink to this equation">¶</a></span>\[V_s = P_s \frac{e_B D_r + e_f D_f}{\rho g (s-1) w_f} (1+S_b^2)^{0.5}\]</div>
+<p>where <span class="math">\(S_b\)</span> is cross-shore bottom slope; <span class="math">\(e_B\)</span> and <span class="math">\(e_f\)</span> are suspension efficiencies for energy dissipation rates <span class="math">\(D_r\)</span> and <span class="math">\(D_f\)</span> due to wave breaking and bottom friction, respectively.
+<span class="math">\(w_f\)</span> is the sediment fall velocity; <span class="math">\(P_s\)</span> is the probability of sediment suspension formulated in Kobayashi et al. (2007).
+The corresponding cross-shore and alongshore suspended sediment transport rates may be expressed as</p>
+<div class="math" id="equation-qs">
+<span class="eqno">(33)<a class="headerlink" href="#equation-qs" title="Permalink to this equation">¶</a></span>\[q_{sc} = a \bar{U}_c V_s; \ \ \ \ \ \ q_{sl} = \bar{V}_l V_s\]</div>
+<p>where <span class="math">\(a\)</span> is empirical suspended load parameter; <span class="math">\(\bar{U}_c\)</span> is the Eulerian-mean cross-shore current which consists of wave-induced return flow (undertow) and tidal current in the cross-shore direction; <span class="math">\(\bar{V}_c\)</span> is alongshore current which includes wave-induced alongshore current and tidal current in the alongshore direction.
+Subscriptions <span class="math">\(c\)</span> and <span class="math">\(l\)</span> represent cross-shore and longshore, respectively (hereafter).</p>
+<p>In Kobayashi et al., the vector (<span class="math">\(\bar{U}_c, \bar{V}_l\)</span>) is defined specifically in cross-shore/alongshore directions which may not be appropriate for general 2-D applications, especially for complex coastal geometry.
+Here, we define <span class="math">\(\vec{\bar{V}} = (\bar{U},\bar{V})\)</span> as the Eulerian-mean current  vector in general Cartesian coordinates  which may not be restricted to the cross-shore/alongshore orientation.
+Thus formula <a class="reference internal" href="#equation-qs">(33)</a> can be written in a general form using coordinate rotation as</p>
+<div class="math" id="equation-nearcom_formulation:23">
+<span class="eqno">(34)<a class="headerlink" href="#equation-nearcom_formulation:23" title="Permalink to this equation">¶</a></span>\[q_{sx} =( a \bar{U} \cos^2 \alpha + a \bar{V} \sin \alpha \cos \alpha + \bar{U} \sin^2 \alpha -\bar{V}\sin \alpha \cos \alpha) V_s\]</div>
+<div class="math" id="equation-nearcom_formulation:24">
+<span class="eqno">(35)<a class="headerlink" href="#equation-nearcom_formulation:24" title="Permalink to this equation">¶</a></span>\[q_{sy} = (a \bar{V} \sin^2 \alpha + a \bar{U} \sin \alpha \cos \alpha + \bar{V} \cos^2 \alpha -\bar{U}\sin \alpha \cos \alpha) V_s\]</div>
+<p>in which <span class="math">\(\alpha\)</span> is an angle between <span class="math">\(x-\)</span> axis and beach-normal direction as shown in <a class="reference internal" href="#beach-angle"><span class="std std-numref">Fig. 1</span></a>.</p>
+<div class="figure align-center" id="beach-angle">
+<a class="reference internal image-reference" href="_images/beach_direction.jpg"><img alt="_images/beach_direction.jpg" src="_images/beach_direction.jpg" style="width: 418.8px; height: 427.6px;" /></a>
+<p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Definition of an angle between <span class="math">\(x-\)</span> axis and beach-normal direction.</span></p>
+</div>
+<p>The bedload transport rates can be expressed as</p>
+<div class="math" id="equation-nearcom_formulation:25">
+<span class="eqno">(36)<a class="headerlink" href="#equation-nearcom_formulation:25" title="Permalink to this equation">¶</a></span>\[q_{bc} = \frac{b P_b}{g (s-1)} \sigma^3_T (1+ U_* V_*^2 +2 F_m \sin \theta) G_s\]</div>
+<div class="math" id="equation-nearcom_formulation:26">
+<span class="eqno">(37)<a class="headerlink" href="#equation-nearcom_formulation:26" title="Permalink to this equation">¶</a></span>\[q_{bl} = \frac{b P_b}{g (s-1)} \sigma^3_T \left[ V_* (1+U^2_* + V^2_*) -2 r_m \sin \theta \right ]\]</div>
+<p>where <span class="math">\(b\)</span> is empirical bedload parameter; <span class="math">\(\sigma_T\)</span> is standard deviation of the oscillatory depth-averaged velocity with zero mean; <span class="math">\((U_*, V_*) = (\bar{U}_c/\sigma_T, \bar{V}_l/\sigma_T)\)</span>; <span class="math">\(\theta\)</span> is wave angle; and</p>
+<div class="math" id="equation-nearcom_formulation:27">
+<span class="eqno">(38)<a class="headerlink" href="#equation-nearcom_formulation:27" title="Permalink to this equation">¶</a></span>\[r_m = -(U_*\cos \theta + V_* \sin \theta)\]</div>
+<div class="math" id="equation-nearcom_formulation:28">
+<span class="eqno">(39)<a class="headerlink" href="#equation-nearcom_formulation:28" title="Permalink to this equation">¶</a></span>\[F_m = V_* \cos \theta - U_* \sin \theta\]</div>
+<p><span class="math">\(G_s\)</span> is the bottom slope function expressed by</p>
+<div class="math" id="equation-nearcom_formulation:29">
+<span class="eqno">(40)<a class="headerlink" href="#equation-nearcom_formulation:29" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{array}{l l l}
+   G_s = \tan \phi /(\tan \phi + S_b)  &amp;  \mbox{for}  &amp;  -\tan \phi &lt; S_b &lt; 0 \\
+   G_s = (\tan \phi -2 S_b) /(\tan \phi -S_b)  &amp; \mbox{for} &amp; 0 &lt; S_b &lt; \tan \phi
+ \end{array}\end{split}\]</div>
+<p>in which <span class="math">\(\phi\)</span> is the angle of internal friction of the sediment and <span class="math">\(\tan \phi \simeq 0.63\)</span> for sand.</p>
+<blockquote>
+<div>In a general Cartesian system, (<span class="math">\(q_{bc}, q_{bl}\)</span>) are converted to (<span class="math">\(q_{bx}, q_{bl}\)</span>) using</div></blockquote>
+<div class="math" id="equation-nearcom_formulation:30">
+<span class="eqno">(41)<a class="headerlink" href="#equation-nearcom_formulation:30" title="Permalink to this equation">¶</a></span>\[q_{bx} = q_{bc} \cos \alpha - q_{bl} \sin \alpha,  \ \ \ \ \ \  q_{by} = q_{bc} \sin \alpha + q_{bl} \cos \alpha\]</div>
+</div>
+<div class="section" id="seabed-evolution-equation">
+<h2>Seabed evolution equation<a class="headerlink" href="#seabed-evolution-equation" title="Permalink to this headline">¶</a></h2>
+<p>The sea bed evolution equation can be described using sediment transport flux in generalized curvilinear coordinates:</p>
+<div class="math" id="equation-bed">
+<span class="eqno">(42)<a class="headerlink" href="#equation-bed" title="Permalink to this equation">¶</a></span>\[(1-p) \frac{\partial h}{\partial t} + \frac{1}{J} \frac{\partial J f_{mor} q_\beta L^\alpha_\beta}{\partial \xi^\alpha} = 0\]</div>
+<p>where <span class="math">\(p\)</span> is the bed porosity, <span class="math">\(f_{mor}\)</span> represents a morphology factor. <a class="reference internal" href="#equation-bed">(42)</a> is solved using the same TVD scheme as in SHORECIRC.</p>
+</div>
 </div>
 
 
@@ -142,6 +242,10 @@ The bottom current velocity <span class="math">\(u_{b \alpha}\)</span> can be ev
   <ul>
 <li><a class="reference internal" href="#"><strong>Formulations</strong></a><ul>
 <li><a class="reference internal" href="#shorecirc-equations">SHORECIRC equations</a></li>
+<li><a class="reference internal" href="#swan-equations">SWAN equations</a></li>
+<li><a class="reference internal" href="#soulsby-s-sediment-transport-formula">Soulsby’s sediment transport formula</a></li>
+<li><a class="reference internal" href="#kobayashi-s-sediment-transport-formula">Kobayashi’s sediment transport formula</a></li>
+<li><a class="reference internal" href="#seabed-evolution-equation">Seabed evolution equation</a></li>
 </ul>
 </li>
 </ul>
