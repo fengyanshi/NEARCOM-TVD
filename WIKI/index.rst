@@ -14,6 +14,9 @@ NEARCOM-TVD
 
    nearcom_history
    nearcom_formulation
+   nearcom_numerical_scheme
+   nearcom_swan_shorecirc
+   nearcom_user_manual
 
 Indices and tables
 ==================
