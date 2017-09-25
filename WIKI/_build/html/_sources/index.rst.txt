@@ -10,13 +10,16 @@ NEARCOM-TVD
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    nearcom_history
    nearcom_formulation
    nearcom_numerical_scheme
    nearcom_swan_shorecirc
    nearcom_user_manual
+   nearcom_examples
+   nearcom_bibliography
+   nearcom_authors
+   nearcom_gallery
 
 Indices and tables
 ==================

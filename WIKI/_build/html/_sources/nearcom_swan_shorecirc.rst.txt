@@ -1,5 +1,5 @@
 *************************************************
-**SWAN-SHORECIRC coupling and parallelization**
+**SWAN-SHORECIRC COUPLING AND PARALLELIZATION**
 *************************************************
 
 For the SHORECIRC code, we used a domain decomposition technique to subdivide the problem into multiple regions and assign each subdomain to a separate processor core. 

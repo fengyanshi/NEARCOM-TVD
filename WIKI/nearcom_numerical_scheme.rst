@@ -1,5 +1,5 @@
 *****************************************
-**Numerical schemes for SHORECIRC**
+**NUMERICAL SCHEMES FOR SHORECIRC**
 *****************************************
 
 Compact form of governing equations

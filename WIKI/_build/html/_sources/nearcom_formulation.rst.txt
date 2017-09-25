@@ -1,5 +1,5 @@
 *************************
-**Formulations**
+**FORMULATIONS**
 *************************
 
 SHORECIRC equations

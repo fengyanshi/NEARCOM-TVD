@@ -1,5 +1,5 @@
 *******************
-**Users' Manual**
+**USERS' MANUAL**
 *******************
 
 Program outline and flow chart
