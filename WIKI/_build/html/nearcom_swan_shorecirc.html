@@ -1,0 +1,120 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>SWAN-SHORECIRC COUPLING AND PARALLELIZATION &#8212; NearCoM_WIKI 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="USERS’ MANUAL" href="nearcom_user_manual.html" />
+    <link rel="prev" title="NUMERICAL SCHEMES FOR SHORECIRC" href="nearcom_numerical_scheme.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="swan-shorecirc-coupling-and-parallelization">
+<h1><strong>SWAN-SHORECIRC COUPLING AND PARALLELIZATION</strong><a class="headerlink" href="#swan-shorecirc-coupling-and-parallelization" title="Permalink to this headline">¶</a></h1>
+<p>For the SHORECIRC code, we used a domain decomposition technique to subdivide the problem into multiple regions and assign each subdomain to a separate processor core.
+Each subdomain region contains an overlapping area of ghost cells, three-row deep, as required by the highest-order ( the fourth order) MUSCL-TVD scheme in the model.
+The Message Passing Interface (MPI) with non-blocking communication is used to exchange  data in the overlapping region between neighboring processors.</p>
+<p>For the SWAN code, we used the existing domain decomposition scheme which is slightly different from the SHORECIRC code.
+The version 40.51AB of SWAN uses a single-direction domain decomposition and takes into account number of dry points in the grid splitting. Because of the different domain decomposition between SHORECIRC and SWAN, it is difficult to directly pass variables between the decomposed domains.
+We now used a two-step mapping method which is  to first gather a passing variable into the global domain, and then to distribute it into each sub-domain.
+Dry points in SWAN are set to be wet with a small water depth (1 mm) in order to make an equal split of a computational domain.</p>
+<p><a class="reference internal" href="#domain"><span class="std std-numref">Fig. 2</span></a> shows an example of domain decomposition in SWAN and SHORECIRC.</p>
+<p>To investigate performance of the parallel program, numerical simulations of an
+idealized  case are tested with different numbers of processors  on a Linux cluster located at University of Delaware.
+The test case is set up in a numerical grid  of 1800 <span class="math">\(\times\)</span> 1800 cells.
+<a class="reference internal" href="#fig1"><span class="std std-numref">Fig. 3</span></a> shows the model speedup versus number of processors.
+It can be seen that performance scales nearly proportional to the number of processors, with some delay caused by inefficiencies in parallelization, such as inter-processor communication time.</p>
+<div class="figure align-left" id="domain">
+<a class="reference internal image-reference" href="_images/parallel.jpg"><img alt="_images/parallel.jpg" src="_images/parallel.jpg" style="width: 581.2px; height: 445.2px;" /></a>
+<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">An example of domain decomposition in SWAN and SHORECIRC/SEDIMENT.</span></p>
+</div>
+<div class="figure align-left" id="fig1">
+<a class="reference internal image-reference" href="_images/speedup.jpg"><img alt="_images/speedup.jpg" src="_images/speedup.jpg" style="width: 498.05px; height: 398.3px;" /></a>
+<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">Variation in model performance with number of processors for a 1800 x 1800 domain.  Straight line indicates arithmetic speedup. Actual performance is shown in the curved line <strong>(the figure needs to be updated using the coupled model !!!)</strong>.</span></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="nearcom_numerical_scheme.html" title="previous chapter"><strong>NUMERICAL SCHEMES FOR SHORECIRC</strong></a></li>
+      <li>Next: <a href="nearcom_user_manual.html" title="next chapter"><strong>USERS’ MANUAL</strong></a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/nearcom_swan_shorecirc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Fengyan Shi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/nearcom_swan_shorecirc.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>NEARCOM-TVD &#8212; NearCoM_WIKI 1.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -24,9 +21,10 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="What is NearCoM" href="nearcom_history.html" />
+    <link rel="next" title="WHAT IS NearCoM" href="nearcom_history.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -34,7 +32,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -46,10 +44,37 @@
 <h1>NEARCOM-TVD<a class="headerlink" href="#nearcom-tvd" title="Permalink to this headline">¶</a></h1>
 <img alt="_images/nearcomtitlebig.jpg" src="_images/nearcomtitlebig.jpg" />
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="nearcom_history.html">What is NearCoM</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nearcom_formulation.html">Formulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_history.html"><strong>WHAT IS NearCoM</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_formulation.html"><strong>FORMULATIONS</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_formulation.html#shorecirc-equations">SHORECIRC equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_formulation.html#swan-equations">SWAN equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_formulation.html#soulsby-s-sediment-transport-formula">Soulsby’s sediment transport formula</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_formulation.html#kobayashi-s-sediment-transport-formula">Kobayashi’s sediment transport formula</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_formulation.html#seabed-evolution-equation">Seabed evolution equation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_numerical_scheme.html"><strong>NUMERICAL SCHEMES FOR SHORECIRC</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_numerical_scheme.html#compact-form-of-governing-equations">Compact form of governing equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_numerical_scheme.html#spatial-discretization">Spatial discretization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_numerical_scheme.html#time-stepping">Time stepping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_numerical_scheme.html#wetting-drying-schemes-for-shallow-water">Wetting-drying schemes for shallow water</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_numerical_scheme.html#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_swan_shorecirc.html"><strong>SWAN-SHORECIRC COUPLING AND PARALLELIZATION</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_user_manual.html"><strong>USERS’ MANUAL</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_user_manual.html#program-outline-and-flow-chart">Program outline and flow chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_user_manual.html#permanent-variables-associated-with-coupling">Permanent variables associated with coupling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_user_manual.html#installation-and-compilation">Installation and compilation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_user_manual.html#input">Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nearcom_user_manual.html#output">Output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_examples.html"><strong>EXAMPLES</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_bibliography.html"><strong>BIBLIOGRAPHY</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_authors.html"><strong>AUTHORS</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_gallery.html"><strong>GALLERY</strong></a></li>
 </ul>
 </div>
 </div>
@@ -77,7 +102,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
-      <li>Next: <a href="nearcom_history.html" title="next chapter">What is NearCoM</a></li>
+      <li>Next: <a href="nearcom_history.html" title="next chapter"><strong>WHAT IS NearCoM</strong></a></li>
   </ul></li>
 </ul>
 </div>
@@ -106,8 +131,8 @@
       &copy;2017, Fengyan Shi.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/index.rst.txt"

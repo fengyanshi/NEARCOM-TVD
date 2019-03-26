@@ -1,0 +1,234 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>NUMERICAL SCHEMES FOR SHORECIRC &#8212; NearCoM_WIKI 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SWAN-SHORECIRC COUPLING AND PARALLELIZATION" href="nearcom_swan_shorecirc.html" />
+    <link rel="prev" title="FORMULATIONS" href="nearcom_formulation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="numerical-schemes-for-shorecirc">
+<h1><strong>NUMERICAL SCHEMES FOR SHORECIRC</strong><a class="headerlink" href="#numerical-schemes-for-shorecirc" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="compact-form-of-governing-equations">
+<h2>Compact form of governing equations<a class="headerlink" href="#compact-form-of-governing-equations" title="Permalink to this headline">¶</a></h2>
+<p>The compact form of governing equations can be written as</p>
+<div class="math" id="equation-tvd">
+<span class="eqno">(1)<a class="headerlink" href="#equation-tvd" title="Permalink to this equation">¶</a></span>\[\frac{\partial {\bf \Psi}}{\partial t} + \nabla \cdot {\bf \Theta}({\bf \Psi}) = {\bf S}\]</div>
+<p>where <span class="math">\({\bf \Psi}\)</span> and <span class="math">\({\bf \Theta} ({\bf \Psi})\)</span> are  the vector of conserved variables and  the flux vector function, respectively, and are given by</p>
+<div class="math" id="equation-nearcom_numerical_scheme:0">
+<span class="eqno">(2)<a class="headerlink" href="#equation-nearcom_numerical_scheme:0" title="Permalink to this equation">¶</a></span>\[\begin{split}{\bf \Psi} = \left( \begin{array}{c} J\eta \\
+JP \\
+JQ \end{array} \right)\end{split}\]</div>
+<div class="math" id="equation-nearcom_numerical_scheme:1">
+<span class="eqno">(3)<a class="headerlink" href="#equation-nearcom_numerical_scheme:1" title="Permalink to this equation">¶</a></span>\[\begin{split}{\bf \Theta} = \left( \begin{array}{c} JP {\bf i} + JQ {\bf j} \\
+\left[JPu +\frac{1}{2}g (\eta^2 + 2 \eta h)JL^1_1 \right ] {\bf i} + \left[JQu +\frac{1}{2}g (\eta^2 + 2 \eta h)JL^2_1 \right ] {\bf j} \\
+\left[JPv +\frac{1}{2}g (\eta^2 + 2 \eta h)JL^1_2 \right ]  {\bf i} + \left[JQv +\frac {1}{2}g (\eta^2 + 2 \eta h)JL^2_2 \right ] {\bf j} \end{array}\right) .\end{split}\]</div>
+<div class="math" id="equation-nearcom_numerical_scheme:2">
+<span class="eqno">(4)<a class="headerlink" href="#equation-nearcom_numerical_scheme:2" title="Permalink to this equation">¶</a></span>\[\begin{split}{\bf S} = \left( \begin{array}{c} 0\\
+\frac{1}{\rho} \left(F_{\mbox{wx}}  -\tau^b_x + \tau^s_x -f_x,  - ROT_x \right) \\
+\frac{1}{\rho} \left(F_{\mbox{wy}}  -\tau^b_y + \tau^s_y  -f_y - ROT_y \right) \end{array} \right)\end{split}\]</div>
+<p>where <span class="math">\((u,v)\)</span> represent Cartesian components of velocity, <span class="math">\((P,Q) = (Hu^1, Hu^2)\)</span>, the contravariant components of flow flux, (<span class="math">\(\tau^b_x, \tau^b_y\)</span>), (<span class="math">\(\tau^b_x, \tau^b_y\)</span>), (<span class="math">\(f_x, f_y\)</span>) and (<span class="math">\(ROT_x, ROT_y\)</span>) represent the bottom friction, wind stress,  Coriolis forcing and the rest of terms in <span class="math">\(x\)</span> and <span class="math">\(y\)</span> directions, respectively.
+(<span class="math">\(F_{\mbox{wx}}, F_{\mbox{wy}}\)</span>) are the gradient of radiation stresses expressed by</p>
+<div class="math" id="equation-nearcom_numerical_scheme:3">
+<span class="eqno">(5)<a class="headerlink" href="#equation-nearcom_numerical_scheme:3" title="Permalink to this equation">¶</a></span>\[F_{\mbox{wx}} = -  \left [ \frac{\partial }{\partial \xi^1} \left (S_{xx} J L^1_1+S_{xy} J L^1_2 \right) +  [ \frac{\partial }{\partial \xi^2} \left (S_{xx} J L^2_1+S_{xy} J L^2_2 \right)
+\right ]\]</div>
+<div class="math" id="equation-nearcom_numerical_scheme:4">
+<span class="eqno">(6)<a class="headerlink" href="#equation-nearcom_numerical_scheme:4" title="Permalink to this equation">¶</a></span>\[F_{\mbox{wy}} = -  \left [ \frac{\partial }{\partial \xi^1} \left (S_{xy} J L^1_1+S_{yy} J L^1_2 \right) + [ \frac{\partial }{\partial \xi^2} \left (S_{xy} J L^2_1+S_{yy} J L^2_2 \right) \right ]\]</div>
+<p>The reason to put the wave forcing as a source term rather than a flux term is that the forcing  is calculated directly from SWAN in a curvilinear grid.</p>
+</div>
+<div class="section" id="spatial-discretization">
+<h2>Spatial discretization<a class="headerlink" href="#spatial-discretization" title="Permalink to this headline">¶</a></h2>
+<p>A combined finite-volume and finite-difference method was applied to the spatial discretization.
+For the flux terms and the first-order derivative terms, MUSCL-TVD schemes from the 2nd-order to 4th-order  are implemented in the present model. The multi-order MUSCL-TVD scheme can be written in a compact form  according to Erduran et al. (2005) who modified Yamamoto et al.’s (1995)  fourth-order approach.
+In <span class="math">\(x\)</span> -direction, for example, the combined form of the interface construction can be written as follows:</p>
+<div class="math" id="equation-left">
+<span class="eqno">(7)<a class="headerlink" href="#equation-left" title="Permalink to this equation">¶</a></span>\[\phi^L_{i+1/2} = \phi_i +\frac{1}{4} \left[ (1-\kappa_1)\chi(r) \Delta^* \phi_{i-1/2} + (1+\kappa_1) \chi(1/r) \Delta^* \phi_{i+1/2} \right ]\]</div>
+<div class="math" id="equation-right">
+<span class="eqno">(8)<a class="headerlink" href="#equation-right" title="Permalink to this equation">¶</a></span>\[\phi^R_{i-1/2} = \phi_i -\frac{1}{4} \left[ (1+\kappa_1)\chi(r) \Delta^* \phi_{i-1/2} + (1-\kappa_1) \chi(1/r) \Delta^* \phi_{i+1/2} \right ]\]</div>
+<p>where <span class="math">\(\phi^L_{i+1/2}\)</span> is the constructed value at the left-hand side of the interface <span class="math">\(i+\frac{1}{2}\)</span> and <span class="math">\(\phi^R_{i-1/2}\)</span> is the value at the right-hand side of the interface <span class="math">\(i - \frac{1}{2}\)</span>.
+The values of <span class="math">\(\Delta^* \phi\)</span> are evaluated as follows:</p>
+<div class="math" id="equation-minmod">
+<span class="eqno">(9)<a class="headerlink" href="#equation-minmod" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{array}{l l l}
+   \Delta^* \phi_{i+1/2} = \Delta \phi_{i+1/2} - \kappa_2 \Delta^3 \bar{\phi}_{i+1/2} /6, \\
+   \Delta \phi_{i+1/2} = \phi_{i+1} - \phi_{i}, \\
+   \Delta^3 \bar{\phi}_{i+1/2} = \Delta \bar{\phi}_{i+3/2} - 2 \Delta \bar{\phi}_{i+1/2} + \Delta \bar{\phi}_{i-1/2}, \\
+   \Delta \bar{\phi}_{i-1/2} =\mbox{minmod} (\Delta \phi_{i-1/2}, \Delta \phi_{i+1/2}, \Delta \phi_{i+3/2}), \\
+   \Delta \bar{\phi}_{i+1/2} =\mbox{minmod} (\Delta \phi_{i+1/2}, \Delta \phi_{i+3/2}, \Delta \phi_{i-1/2}), \\
+   \Delta \bar{\phi}_{i+3/2} =\mbox{minmod} (\Delta \phi_{i+3/2}, \Delta \phi_{i-1/2}, \Delta \phi_{i+1/2})
+\end{array}\end{split}\]</div>
+<p>In <a class="reference internal" href="#equation-minmod">(9)</a>, minmod represents the minmod limiter and is given by</p>
+<div class="math" id="equation-nearcom_numerical_scheme:5">
+<span class="eqno">(10)<a class="headerlink" href="#equation-nearcom_numerical_scheme:5" title="Permalink to this equation">¶</a></span>\[\mbox{minmod} (j,k,l) = \mbox{sign} (j) \mbox{max} \{ 0, \mbox{min} [|j|, 2 \mbox{sign} (j) k, 2 \mbox{sign} (j) l ] \} .\]</div>
+<p><span class="math">\(\kappa_1\)</span> and <span class="math">\(\kappa_2\)</span> in <a class="reference internal" href="#equation-left">(7)</a> and <a class="reference internal" href="#equation-right">(8)</a> are  control parameters for orders of the scheme in the compact form.
+The complete form with <span class="math">\((\kappa_1, \kappa_2) = (1/3, 1)\)</span> is the fourth-order scheme given by Yamamoto et al. (1995).
+<span class="math">\((\kappa_1, \kappa_2) = (1/3, 0)\)</span> yields a third-order scheme, while the second-order scheme can be retrieved using <span class="math">\((\kappa_1, \kappa_2) = (-1, 0)\)</span>.</p>
+<p><span class="math">\(\chi(r)\)</span> in <a class="reference internal" href="#equation-left">(7)</a> and <a class="reference internal" href="#equation-right">(8)</a> is the limiter function.
+The original scheme introduced by Yamamoto et al. (1998) uses the Minmod limiter as used in <a class="reference internal" href="#equation-minmod">(9)</a>. Erduran et al. (2005) found that the use of the van-Leer limiter for the third-order scheme gives more accurate results.
+Their finding was confirmed by  using the present model in the benchmark tests for wave runup conducted by Tehranirad et al. (2011).
+The van-Leer limiter can be expressed as</p>
+<div class="math" id="equation-nearcom_numerical_scheme:6">
+<span class="eqno">(11)<a class="headerlink" href="#equation-nearcom_numerical_scheme:6" title="Permalink to this equation">¶</a></span>\[\chi(r) = \frac{r+|r|}{1+r}\]</div>
+<p>where</p>
+<div class="math" id="equation-nearcom_numerical_scheme:7">
+<span class="eqno">(12)<a class="headerlink" href="#equation-nearcom_numerical_scheme:7" title="Permalink to this equation">¶</a></span>\[r = \frac{\Delta^* \phi_{i+1/2}}{\Delta ^* \phi_{i-1/2}}.\]</div>
+<p>The numerical fluxes are computed using a HLL approximate Riemann solver</p>
+<div class="math" id="equation-nearcom_numerical_scheme:8">
+<span class="eqno">(13)<a class="headerlink" href="#equation-nearcom_numerical_scheme:8" title="Permalink to this equation">¶</a></span>\[\begin{split}{\bf \Theta} ({\bf \Psi}^L, {\bf \Psi}^R)= \left \{ \begin{array}{ll} {\bf \Theta} ({\bf \Psi}^L) &amp; \mbox{if} \ \ \ s_L \ge 0 \\
+{\bf \Theta}^* ({\bf \Psi}^L, {\bf \Psi}^R) &amp; \mbox{if} \ \ \ s_L &lt; 0 &lt; s_R \\
+{\bf \Theta}({\bf \Psi}^R) &amp; \mbox{if} \ \ \ s_R \le 0,\end{array}  \right.\end{split}\]</div>
+<p>where</p>
+<div class="math" id="equation-nearcom_numerical_scheme:9">
+<span class="eqno">(14)<a class="headerlink" href="#equation-nearcom_numerical_scheme:9" title="Permalink to this equation">¶</a></span>\[{\bf \Theta^*} ({\bf \Psi}^L, {\bf \Psi}^R) = \frac{s_R {\bf \Theta} ({\bf \Psi}^L) -s_L {\bf \Theta}({\bf \Psi}^R) + s_L s_R ({\bf \Psi}^R - {\bf \Psi}^L)}{s_R - s_L}\]</div>
+<p>The wave speeds of the Riemann solver are given by</p>
+<div class="math" id="equation-sl">
+<span class="eqno">(15)<a class="headerlink" href="#equation-sl" title="Permalink to this equation">¶</a></span>\[s_L= \mbox{min} ({\bf V}^L \cdot {\bf n} - \sqrt{g (h+\eta)^L} , u_s -\sqrt{\varphi_s}),\]</div>
+<div class="math" id="equation-sr">
+<span class="eqno">(16)<a class="headerlink" href="#equation-sr" title="Permalink to this equation">¶</a></span>\[s_R= \mbox{max} ({\bf V}^R \cdot {\bf n} + \sqrt{g (h+\eta)^R},  u_s +\sqrt{\varphi_s}),\]</div>
+<p>in which <span class="math">\(u_s\)</span> and <span class="math">\(\varphi_s\)</span> are estimated as</p>
+<div class="math" id="equation-nearcom_numerical_scheme:10">
+<span class="eqno">(17)<a class="headerlink" href="#equation-nearcom_numerical_scheme:10" title="Permalink to this equation">¶</a></span>\[u_s =\frac{1}{2} ({\bf V}^L + {\bf V}^R)\cdot {\bf n} + \sqrt{g (\eta + h)^L} - \sqrt{g(\eta+h)^R}\]</div>
+<div class="math" id="equation-nearcom_numerical_scheme:11">
+<span class="eqno">(18)<a class="headerlink" href="#equation-nearcom_numerical_scheme:11" title="Permalink to this equation">¶</a></span>\[\sqrt{\varphi_s} = \frac{\sqrt{g (\eta + h)^L}+\sqrt{g (\eta + h)^R}}{2} +\frac{({\bf V}^L - {\bf V}^R)\cdot {\bf n}}{4}\]</div>
+<p>and <span class="math">\({\bf n}\)</span> is the normalized side vector for a cell face.</p>
+</div>
+<div class="section" id="time-stepping">
+<h2>Time stepping<a class="headerlink" href="#time-stepping" title="Permalink to this headline">¶</a></h2>
+<p>The third-order Strong Stability-Preserving (SSP) Runge-Kutta scheme for nonlinear spatial discretization (Gottlieb et al., 2001) was adopted for time stepping. The scheme is given by</p>
+<div class="math" id="equation-runge">
+<span class="eqno">(19)<a class="headerlink" href="#equation-runge" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{array}{l l l}
+   {\bf \Psi}^{(1)} = {\bf \Psi}^{n}  + \Delta t (- \nabla \cdot {\bf \Theta} ({\bf \Psi}^n) + {\bf S}^{(1)} ) \\
+   {\bf \Psi}^{(2)} = \frac{3}{4}{\bf \Psi}^{n}  + \frac{1}{4} \left[   {\bf \Psi}^{(1)} +  \Delta t \left (- \nabla \cdot {\bf \Theta} ({\bf \Psi}^{(1)} ) + {\bf S}^{(2)} \right) \right] \\
+   {\bf \Psi}^{n+1} = \frac{1}{3}{\bf \Psi}^{n}  + \frac{2}{3} \left[   {\bf \Psi}^{(2)} +  \Delta t \left (- \nabla \cdot {\bf \Theta} ({\bf \Psi}^{(2)} ) + {\bf S}^{n+1} \right) \right]
+\end{array}\end{split}\]</div>
+<p>in which <span class="math">\({\bf \Psi}^{n}\)</span> denotes <span class="math">\({\bf \Psi}\)</span> at time level <span class="math">\(n\)</span>.
+<span class="math">\({\bf \Psi}^{(1)}\)</span> and <span class="math">\({\bf \Psi}^{(2)}\)</span> are values at intermediate stages in the Runge-Kutta integration.</p>
+<blockquote>
+<div>An adaptive time step is chosen, following the Courant-Friedrichs-Lewy (CFL) criterion:</div></blockquote>
+<div class="math" id="equation-cfl">
+<span class="eqno">(20)<a class="headerlink" href="#equation-cfl" title="Permalink to this equation">¶</a></span>\[\Delta t = C  \mbox{min} \left ( \mbox{min} \frac{\Delta x}{|u_{i,j}| + \sqrt{g (h_{i,j} +\eta_{i,j})}},  \mbox{min} \frac{\Delta y}{|v_{i,j}| + \sqrt{g (h_{i,j} +\eta_{i,j})}} \right )\]</div>
+<p>where <span class="math">\(C\)</span> is the Courant number and <span class="math">\(C=0.5\)</span> was used in the following examples.</p>
+</div>
+<div class="section" id="wetting-drying-schemes-for-shallow-water">
+<h2>Wetting-drying schemes for shallow water<a class="headerlink" href="#wetting-drying-schemes-for-shallow-water" title="Permalink to this headline">¶</a></h2>
+<p>The wetting-drying scheme for modeling a moving boundary is straightforward.
+The normal flux <span class="math">\({\bf n} \cdot {\bf M}\)</span> at the cell interface of a dry cell is set to zero.
+A mirror boundary condition is applied to the high-order MUSCL-TVD scheme.
+It may be noted that the wave speeds of the Riemann solver  <a class="reference internal" href="#equation-sl">(15)</a> and <a class="reference internal" href="#equation-sr">(16)</a> for a dry cell are modified as</p>
+<div class="math" id="equation-nearcom_numerical_scheme:12">
+<span class="eqno">(21)<a class="headerlink" href="#equation-nearcom_numerical_scheme:12" title="Permalink to this equation">¶</a></span>\[s_L= {\bf V}^L \cdot {\bf n} - \sqrt{g (h+\eta)^L} ,  \ \ \ \    s_R= {\bf V}^L \cdot {\bf n} +2  \sqrt{g (h+\eta)^L}  \  \  \  \mbox{(right dry cell)}\]</div>
+<p>and</p>
+<div class="math" id="equation-nearcom_numerical_scheme:13">
+<span class="eqno">(22)<a class="headerlink" href="#equation-nearcom_numerical_scheme:13" title="Permalink to this equation">¶</a></span>\[s_L= {\bf V}^R \cdot {\bf n} - \sqrt{g (h+\eta)^R} ,  \ \ \ \    s_R= {\bf V}^R \cdot {\bf n} +2  \sqrt{g (h+\eta)^R}  \  \  \  \mbox{(left dry cell)}\]</div>
+</div>
+<div class="section" id="boundary-conditions">
+<h2>Boundary conditions<a class="headerlink" href="#boundary-conditions" title="Permalink to this headline">¶</a></h2>
+<p>To incorporate tide and river inflow into the circulation module, two types of open boundary conditions are implemented.
+One is the surface clamped boundary condition that reads at tidal open boundaries</p>
+<div class="math" id="equation-nearcom_numerical_scheme:14">
+<span class="eqno">(23)<a class="headerlink" href="#equation-nearcom_numerical_scheme:14" title="Permalink to this equation">¶</a></span>\[\eta= \eta_0    \ \ \ \ \ \ \mbox{at tidal open boundaries}\]</div>
+<p>where <span class="math">\(\eta_0\)</span> is measured or predicted surface elevations at open boundaries.
+The other is the specified flux boundary condition that is usually used at river boundaries:</p>
+<div class="math" id="equation-nearcom_numerical_scheme:15">
+<span class="eqno">(24)<a class="headerlink" href="#equation-nearcom_numerical_scheme:15" title="Permalink to this equation">¶</a></span>\[P^\alpha = Q^{\mbox{flux}}_\beta L^\alpha_\beta\]</div>
+<p>where <span class="math">\(Q^{\mbox{flux}}\)</span> is the specified volume flux per unit width.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><strong>NUMERICAL SCHEMES FOR SHORECIRC</strong></a><ul>
+<li><a class="reference internal" href="#compact-form-of-governing-equations">Compact form of governing equations</a></li>
+<li><a class="reference internal" href="#spatial-discretization">Spatial discretization</a></li>
+<li><a class="reference internal" href="#time-stepping">Time stepping</a></li>
+<li><a class="reference internal" href="#wetting-drying-schemes-for-shallow-water">Wetting-drying schemes for shallow water</a></li>
+<li><a class="reference internal" href="#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="nearcom_formulation.html" title="previous chapter"><strong>FORMULATIONS</strong></a></li>
+      <li>Next: <a href="nearcom_swan_shorecirc.html" title="next chapter"><strong>SWAN-SHORECIRC COUPLING AND PARALLELIZATION</strong></a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/nearcom_numerical_scheme.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Fengyan Shi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/nearcom_numerical_scheme.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
