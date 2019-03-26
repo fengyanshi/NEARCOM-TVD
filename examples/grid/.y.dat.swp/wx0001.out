@@ -1,0 +1,49 @@
+&FNAMES
+Circ_type = ' ',
+Circ_specify_flux = ' ',
+Circ_mask = ' ',
+Circ_station = ' ',
+Circ_wind = ' ',
+/
+&NUMERICS
+CR = 5,
+curv_grid=0,
+orth_grid=1,
+plotstart=0.,
+plotintra=600.,
+sta_interval=900.,
+/
+&GRID
+k_3d=10,
+/
+&BOUNDARY
+  east_ele2_flx3_grd4_rad5_per6=1,
+    jstart_E=1,
+    jend_E=300,
+    east_data1_anly2=2
+  west_ele2_flx3_grd4_rad5_per6=1,
+    jstart_W=1,
+    jend_W=300,
+    west_data1_anly2=2
+  south_ele2_flx3_grd4_rad5_per6=1,
+    istart_S=1,
+    iend_S=300,
+    south_data1_anly2=2
+  north_ele2_flx3_grd4_rad5_per6=1,
+    istart_N=1,
+    iend_N=300,
+    north_data1_anly2=2
+/
+&PHYSICS
+f_cwc = 0.008,
+rmanning = 0.017
+hi=0.50
+delta = 0.01
+c_subgrid = 1.5,
+anu_tb_const=0.005,
+anu_t0_const=0.005,
+disp3d = 0,
+depth_min=0.2,
+wind_u = 0.,
+wind_v = 0.,
+/

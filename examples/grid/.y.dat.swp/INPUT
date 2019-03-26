@@ -1,0 +1,61 @@
+$*************************HEADING************************                                           
+$                                                                                                   
+PROJ 'Ideal bathymetry' '01'                                                                        
+$                                                                                                   
+$ Time of simulation: 22:56 on Sep.19, 2005                                                         
+$ Follow windpower52hK, use CURVlinear instead of REGular.                                          
+$ The topography is from Whitney. Wind data is in x',y'                                             
+$                                                                                                   
+$********************MODEL INPUT*************************                                           
+$                                                                                                   
+SET 0 90 0.05 200 3 9.81 1025 0 0.10 CARTESIAN                                                      
+MODE NONSTATIONARY TWODIMENSIONAL                                                                   
+$                                                                                                   
+CGRID CURV 125 200 EXC -99999.0 -99999.0 SECTOR -90 90 72 0.038 0.5 43                                     
+READGRID COOR 1 'xxyy0.dat' 3                                                                          
+$                                                                                                   
+INPGRID BOTTOM CURV 0. 0. 125 200 EXC -99999.0                                                      
+READINP BOTTOM 1 'depp0.dat' 3 0 FREE                                                              
+INPGRID CUR CURV 0. 0. 125 200 NONSTAT 20031027.074800 1 hr 20031029.114200                         
+$READINP CUR 1 SERIES 'fnM2csml.dat' 3 0 FREE                                                        
+INPGRID WLEVEL CURV 0. 0. 125 200 NONSTAT 20050119.000000 60 MI 20050831.000000                     
+$READINP WLEVEL 1 SERIES 'nothing' 3 0 FREE                                                         
+WIND 40 60                                                                                          
+$BOUNDPAR1 SHAPESPEC JONSWP 3.3 PEAK DSPR DEGREES                                                    
+$BOUNDPAR2 SEGMENT IJ 166 0 0 0 0 0 0 433 0 433 166 433 CONSTANT FILE 'sfwave_jun_aug.dat'           
+$                                                                                                   
+$ physics:                                                                                          
+WCAPping CSM                                                                                        
+BREAKING CONSTANT 1.0 0.73                                                                          
+FRICTION JON                                                                                        
+TRIAD                                                                                               
+Gen3                                                                                                
+$ AGROW 0.0015                                                                                      
+$OFF QUAD                                                                                           
+$                                                                                                   
+PROP BSBT                                                                                           
+NUMERIC ACCUR .02 .02 .02 98 STAT 15 0.0                                                            
+$                                                                                                   
+OUTPUT OPTIONS '!' BLOCK 4 200                                                                      
+POINTS 'BUOYS' file 'POINT1.DAT'                                                                    
+TABLE  'BUOYS' noHEAD   'table0.dat' HS depth HSWEll DIR PDIR RTP VEL SETUP TM01 TM02 TMM10 OUTPUT 2
+$SPEC   'BUOYS' SPEC1D 'SPEC1D0.out'                                                                
+$SPEC   'BUOYS' SPEC2D 'SPEC2D0.out'                                                                
+$CURVE 'curve' 97219.84 201631.0 80 99569.92 274417.1                                               
+$TABLE  'curve' noHEAD   'hscurve.dat' HS dep OUTPUT 20031027.074800 6 MI                           
+$SPEC 'curve' SPEC1D 'specurve1d.dat' OUTPUT 20031027.074800 6 MI                                   
+$SPEC 'curve' SPEC2D 'specurve2d.dat' OUTPUT 20031027.074800 6 MI                                   
+$                                                                                                   
+GROUP  'GROUP' 1 126 1 201                                                                          
+BLOCK  'GROUP' NOHEAD 'HS.out' LAYOUT 3 HS                                                        
+$BLOCK  'GROUP' NOHEAD 'PDIR.out' LAYOUT 3 PDIR                                                    
+$BLOCK  'GROUP' NOHEAD 'PPER.out' LAYOUT 3 RTP                                                     
+$BLOCK  'GROUP' NOHEAD 'UBOT.out' LAYOUT 3 UBOT                                                     
+$BLOCK  'GROUP' NOHEAD 'DISS.out' LAYOUT 3 DISS                                           
+$NGRID 'nestloc' 543300.0 170000.0 0 2000.0 4330.0 10 5                                             
+$NESTOUT 'nestloc' 'nestout.dat'                                                                    
+$ set itest=30 in order to get detailed information on timings and                                  
+$ frequent use of limiter/rescaling                                                                 
+TEST 0,0                                                                                            
+COMPUTE NONSTAT 20050619.000000 60 MI 20050831.000000                                               
+STOP                                                                                                
