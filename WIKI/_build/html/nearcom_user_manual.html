@@ -1,29 +1,21 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>USERS’ MANUAL &#8212; NearCoM_WIKI 1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="EXAMPLES" href="nearcom_examples.html" />
     <link rel="prev" title="SWAN-SHORECIRC COUPLING AND PARALLELIZATION" href="nearcom_swan_shorecirc.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -31,13 +23,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="users-manual">
@@ -49,7 +42,7 @@
 <p>The flow chart is shown in <a class="reference internal" href="#chart"><span class="std std-numref">Fig. 4</span></a>.</p>
 <div class="figure align-center" id="chart">
 <a class="reference internal image-reference" href="_images/chart.jpg"><img alt="_images/chart.jpg" src="_images/chart.jpg" style="width: 402.5px; height: 565.5px;" /></a>
-<p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">Flow chart of the main program.</span></p>
+<p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">Flow chart of the main program.</span><a class="headerlink" href="#chart" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="permanent-variables-associated-with-coupling">
@@ -59,35 +52,35 @@
 <p>DepthX(): still water depth <em>h</em> at x-interface</p>
 <p>DepthY(): still water depth <em>h</em> at y-interface</p>
 <p>Eta():   surface elevation, for dry point, Eta() = MinDepth - Depth(), MinDepth is specified in input.txt.</p>
-<p>Eta0(): <span class="math">\(\eta\)</span> at previous time level</p>
+<p>Eta0(): <span class="math notranslate nohighlight">\(\eta\)</span> at previous time level</p>
 <p>MASK(): 1 - wet,       0 - dry</p>
 <p>MASK_STRUC(): 0 - permanent dry point</p>
 <p>U():  depth-averaged <em>u</em></p>
 <p>V():  depth-averaged <em>v</em></p>
-<p>Uc(): contravariant component of depth-averaged velocity in <span class="math">\(\xi_1\)</span> direction</p>
-<p>Vc(): contravariant component of depth-averaged velocity in <span class="math">\(\xi_2\)</span> direction</p>
-<p>HU(): <span class="math">\((h+\eta)u\)</span> at element</p>
-<p>HV(): <span class="math">\((h+\eta)v\)</span> at element</p>
-<p>P(): <span class="math">\((h+\eta)U\)</span>   at x- interface for Cartesian, and <span class="math">\((h+\eta)Uc\)</span>  at <span class="math">\(\xi_1\)</span> -interface curvilinear</p>
-<p>Q(): <span class="math">\((h+\eta)V\)</span>   at y- interface for Cartesian, and <span class="math">\((h+\eta)Vc\)</span>  at <span class="math">\(\xi_2\)</span> -interface curvilinear</p>
+<p>Uc(): contravariant component of depth-averaged velocity in <span class="math notranslate nohighlight">\(\xi_1\)</span> direction</p>
+<p>Vc(): contravariant component of depth-averaged velocity in <span class="math notranslate nohighlight">\(\xi_2\)</span> direction</p>
+<p>HU(): <span class="math notranslate nohighlight">\((h+\eta)u\)</span> at element</p>
+<p>HV(): <span class="math notranslate nohighlight">\((h+\eta)v\)</span> at element</p>
+<p>P(): <span class="math notranslate nohighlight">\((h+\eta)U\)</span>   at x- interface for Cartesian, and <span class="math notranslate nohighlight">\((h+\eta)Uc\)</span>  at <span class="math notranslate nohighlight">\(\xi_1\)</span> -interface curvilinear</p>
+<p>Q(): <span class="math notranslate nohighlight">\((h+\eta)V\)</span>   at y- interface for Cartesian, and <span class="math notranslate nohighlight">\((h+\eta)Vc\)</span>  at <span class="math notranslate nohighlight">\(\xi_2\)</span> -interface curvilinear</p>
 <p>Fx(): numerical flux F at x-interface</p>
 <p>Fy(): numerical flux F at y-interface</p>
 <p>Gx(): numerical flux G at x-interface</p>
 <p>Gy(): numerical flux G at y-interface</p>
-<p>Ubar(): <span class="math">\(HU\)</span> for Cartesian and <span class="math">\(JHU\)</span> for curvilinear</p>
-<p>Vbar(): <span class="math">\(HV\)</span> for Cartesian and <span class="math">\(JHV\)</span> for curvilinear</p>
-<p>EtaRxL(): <span class="math">\(\eta\)</span> Left value at x-interface</p>
-<p>EtaRxR(): <span class="math">\(\eta\)</span> Right value at x-interface</p>
-<p>EtaRyL(): <span class="math">\(\eta\)</span> Left value at y-interface</p>
-<p>EtaRyR(): <span class="math">\(\eta\)</span> Right value at y-interface</p>
+<p>Ubar(): <span class="math notranslate nohighlight">\(HU\)</span> for Cartesian and <span class="math notranslate nohighlight">\(JHU\)</span> for curvilinear</p>
+<p>Vbar(): <span class="math notranslate nohighlight">\(HV\)</span> for Cartesian and <span class="math notranslate nohighlight">\(JHV\)</span> for curvilinear</p>
+<p>EtaRxL(): <span class="math notranslate nohighlight">\(\eta\)</span> Left value at x-interface</p>
+<p>EtaRxR(): <span class="math notranslate nohighlight">\(\eta\)</span> Right value at x-interface</p>
+<p>EtaRyL(): <span class="math notranslate nohighlight">\(\eta\)</span> Left value at y-interface</p>
+<p>EtaRyR(): <span class="math notranslate nohighlight">\(\eta\)</span> Right value at y-interface</p>
 <p>HxL():   total depth  Left value at x-interface</p>
 <p>HxR():   total depth  Right value at x-interface</p>
 <p>HyL():   total depth  Left value at y-interface</p>
 <p>HyR():   total depth  Right value at y-interface</p>
-<p>HUxL(): <span class="math">\((h+\eta)u\)</span> Left value at x-interface</p>
-<p>HUxR(): <span class="math">\((h+\eta)u\)</span> Right value at x-interface</p>
-<p>HVyL(): <span class="math">\((h+\eta)v\)</span> Left value at y-interface</p>
-<p>HVyR(): <span class="math">\((h+\eta)v\)</span> Right value at y-interface</p>
+<p>HUxL(): <span class="math notranslate nohighlight">\((h+\eta)u\)</span> Left value at x-interface</p>
+<p>HUxR(): <span class="math notranslate nohighlight">\((h+\eta)u\)</span> Right value at x-interface</p>
+<p>HVyL(): <span class="math notranslate nohighlight">\((h+\eta)v\)</span> Left value at y-interface</p>
+<p>HVyR(): <span class="math notranslate nohighlight">\((h+\eta)v\)</span> Right value at y-interface</p>
 <p>PL(): Left P value at x-interface</p>
 <p>PR(): Right P value at x-interface</p>
 <p>QL(): Left Q value at y-interface</p>
@@ -98,16 +91,17 @@
 <h2>Installation and compilation<a class="headerlink" href="#installation-and-compilation" title="Permalink to this headline">¶</a></h2>
 <p>NearCoM-TVD is distributed in a compressed fie. To install the programs, first, uncompress the package. Then use</p>
 <blockquote>
-<div><span class="math">\(&gt;\)</span> tar xvf <span class="math">\(*\)</span>.tar</div></blockquote>
+<div><p><span class="math notranslate nohighlight">\(&gt;\)</span> tar xvf <span class="math notranslate nohighlight">\(*\)</span>.tar</p>
+</div></blockquote>
 <p>to extract files from the uncompressed package. The exacted files will be distributed in two new directories: <strong>/CIRC_SWAN</strong> and <strong>/work</strong>.</p>
 <p>To compile the program, go to <strong>/CIRC_SWAN</strong> and modify Makefile if needed. There are several necessary flags in Makefile needed to specify below.</p>
 <blockquote>
 <div><p>-DDOUBLE_PRECISION: use double precision, default is single precision.</p>
 <p>-DPARALLEL: use parallel mode, default is serial mode.</p>
 <p>-DSAMPLES: include all samples, default is no sample included.</p>
-<dl class="docutils">
-<dt>-DCURVILINEAR: curvilinear version, otherwise Cartesian.  </dt>
-<dd><span class="math">\(\bf NOTE:\)</span>  setting curvilinear is a must for SWAN and SHORECIRC coupled model.</dd>
+<dl class="simple">
+<dt>-DCURVILINEAR: curvilinear version, otherwise Cartesian.  </dt><dd><p><span class="math notranslate nohighlight">\(\bf NOTE:\)</span>  setting curvilinear is a must for SWAN and SHORECIRC coupled model.</p>
+</dd>
 </dl>
 <p>-DSEDIMENT: include sediment and seabed modules.</p>
 <p>-DINTEL: INTEL compiler.</p>
@@ -118,28 +112,27 @@
 </div></blockquote>
 <p>Then execute</p>
 <blockquote>
-<div><p><span class="math">\(&gt;\)</span> make clean</p>
-<p><span class="math">\(&gt;\)</span> make</p>
+<div><p><span class="math notranslate nohighlight">\(&gt;\)</span> make clean</p>
+<p><span class="math notranslate nohighlight">\(&gt;\)</span> make</p>
 </div></blockquote>
 <p>The executable file ‘nearcom’ will be generated and  copied from <strong>/CIRC_SWAN</strong> to <strong>/work/</strong>. Note: use ‘make clean’ after any modification of Makefile.</p>
 <p>To run the model, go to <strong>/work</strong>. Modify INPUT if needed and run.</p>
 </div>
 <div class="section" id="input">
 <h2>Input<a class="headerlink" href="#input" title="Permalink to this headline">¶</a></h2>
-<p>Following are descriptions of parameters in <strong>input.txt</strong>  (<span class="math">\(\bf  NOTE:\)</span>  all parameter names are capital sensitive).</p>
+<p>Following are descriptions of parameters in <strong>input.txt</strong>  (<span class="math notranslate nohighlight">\(\bf  NOTE:\)</span>  all parameter names are capital sensitive).</p>
 <ul>
-<li><p class="first"><strong>SWAN INPUT:</strong>  refer to SWAN manual. Model run time is set in SWAN model. For example,</p>
+<li><p><strong>SWAN INPUT:</strong>  refer to SWAN manual. Model run time is set in SWAN model. For example,</p>
 <p>COMPUTE NONSTAT 20081114.160000 1 MI 20081114.230000</p>
-<p>The above setting means model run start from 2008 11 14 16:00 to 2008 11 14 23:00. The model call swan at <span class="math">\(DT_{\mbox{swan}}\)</span> = 1 minute. The loop number for SHORECIRC and SEDIMENT is estimated by  <span class="math">\(DT_{\mbox{swan}}\)</span> and the time step of SHORECIRC (time varying).</p>
+<p>The above setting means model run start from 2008 11 14 16:00 to 2008 11 14 23:00. The model call swan at <span class="math notranslate nohighlight">\(DT_{\mbox{swan}}\)</span> = 1 minute. The loop number for SHORECIRC and SEDIMENT is estimated by  <span class="math notranslate nohighlight">\(DT_{\mbox{swan}}\)</span> and the time step of SHORECIRC (time varying).</p>
 <p><strong>IMPORTANT SETTING IN SWAN:</strong></p>
 <ol class="arabic simple">
-<li>in SET, always set CARTESIAN in order to make a grid orientation consistent with SHORECIRC</li>
-<li>in SET, always set [inrhog] as 1 to get a true wave energy dissipation.</li>
-<li>in COMPUTE, always set NONSTAT mode.</li>
+<li><p>in SET, always set CARTESIAN in order to make a grid orientation consistent with SHORECIRC</p></li>
+<li><p>in SET, always set [inrhog] as 1 to get a true wave energy dissipation.</p></li>
+<li><p>in COMPUTE, always set NONSTAT mode.</p></li>
 </ol>
 </li>
-<li><p class="first"><strong>WAVE CURRENT INTERACTION</strong></p>
-</li>
+<li><p><strong>WAVE CURRENT INTERACTION</strong></p></li>
 </ul>
 <p>SWAN_RUN: logical parameter to run SWAN</p>
 <p>SHORECIRC_RUN: logical parameter to run SHORECIRC</p>
@@ -149,22 +142,23 @@
 <p>WC_BOUND_NORTH: north bound region  (number of grid point) in which  wave-current is inactive.</p>
 <p>WC_LAG :  time delay for wave-current interaction</p>
 <ul class="simple">
-<li><strong>TITLE</strong>:</li>
+<li><p><strong>TITLE</strong>:</p></li>
 </ul>
 <blockquote>
-<div>title for SHORECIRC log file</div></blockquote>
+<div><p>title for SHORECIRC log file</p>
+</div></blockquote>
 <ul class="simple">
-<li><strong>SPECIFICATION OF MULTI-PROCESSORS</strong></li>
+<li><p><strong>SPECIFICATION OF MULTI-PROCESSORS</strong></p></li>
 </ul>
 <blockquote>
 <div><p>PX:  processor numbers in X</p>
-<dl class="docutils">
-<dt>PY:  processor numbers in Y    </dt>
-<dd><span class="math">\(\bf NOTE:\)</span> PX and PY must be consistency with number of processors defined in mpirun command, e.g., mpirun -np n (where n = px <span class="math">\(\times\)</span> py).</dd>
+<dl class="simple">
+<dt>PY:  processor numbers in Y    </dt><dd><p><span class="math notranslate nohighlight">\(\bf NOTE:\)</span> PX and PY must be consistency with number of processors defined in mpirun command, e.g., mpirun -np n (where n = px <span class="math notranslate nohighlight">\(\times\)</span> py).</p>
+</dd>
 </dl>
 </div></blockquote>
 <ul class="simple">
-<li><strong>SPECIFICATION OF WATER DEPTH</strong></li>
+<li><p><strong>SPECIFICATION OF WATER DEPTH</strong></p></li>
 </ul>
 <p>DEPTH_TYPE: depth input type.</p>
 <blockquote>
@@ -172,46 +166,46 @@
 <div class="line">DEPTH_TYPE=DATA: from a depth file.</div>
 <div class="line">The program includes several simple bathymetry configurations such as</div>
 <div class="line">DEPTH_TYPE=FLAT:  flat bottom, need DEPTH_FLAT</div>
-<div class="line">DEPTH_TYPE=SLOPE:  plane beach along <span class="math">\(x\)</span> direction. It needs three parameters: slope,SLP,  slope starting point, Xslp and flat part of depth, DEPTH_FLAT</div>
+<div class="line">DEPTH_TYPE=SLOPE:  plane beach along <span class="math notranslate nohighlight">\(x\)</span> direction. It needs three parameters: slope,SLP,  slope starting point, Xslp and flat part of depth, DEPTH_FLAT</div>
 </div>
 </div></blockquote>
-<dl class="docutils">
-<dt>DEPTH_FILE: bathymetry file if  DEPTH_TYPE=DATA, file dimension should be Mglob x Nglob    </dt>
-<dd><blockquote class="first">
-<div>with the first point as the south-west corner.  The read format in the code is shown below.</div></blockquote>
-<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">DO</span> <span class="n">J</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">Nglob</span>
+<dl>
+<dt>DEPTH_FILE: bathymetry file if  DEPTH_TYPE=DATA, file dimension should be Mglob x Nglob    </dt><dd><blockquote>
+<div><p>with the first point as the south-west corner.  The read format in the code is shown below.</p>
+</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DO</span> <span class="n">J</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">Nglob</span>
  <span class="n">READ</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">*</span><span class="p">)(</span><span class="n">Depth</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="n">J</span><span class="p">),</span><span class="n">I</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">Mglob</span><span class="p">)</span>
 <span class="n">ENDDO</span>
 </pre></div>
 </div>
 </dd>
-<dt>DEPTH_FLAT: water depth of flat bottom if DEPTH_TYPE=FLAT or DEPTH_TYPE=SLOPE    </dt>
-<dd>(flat part of a plane beach).</dd>
+<dt>DEPTH_FLAT: water depth of flat bottom if DEPTH_TYPE=FLAT or DEPTH_TYPE=SLOPE    </dt><dd><p>(flat part of a plane beach).</p>
+</dd>
 </dl>
 <p>SLP: slope if DEPTH_TYPE=SLOPE</p>
-<p>Xslp: starting <span class="math">\(x\)</span> (m) of a slope, if DEPTH_TYPE=SLOPE</p>
+<p>Xslp: starting <span class="math notranslate nohighlight">\(x\)</span> (m) of a slope, if DEPTH_TYPE=SLOPE</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF RESULT FOLDER</strong></li>
+<li><p><strong>SPECIFICATION OF RESULT FOLDER</strong></p></li>
 </ul>
 <p>RESULT_FOLDER: result folder name, e.g., RESULT_FOLDER = /Users/fengyanshi/tmp/</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF DIMENSION</strong></li>
+<li><p><strong>SPECIFICATION OF DIMENSION</strong></p></li>
 </ul>
-<p>Mglob: global dimension in <span class="math">\(x\)</span> direction.</p>
-<dl class="docutils">
-<dt>Nglob: global dimension in <span class="math">\(y\)</span> direction.    </dt>
-<dd><span class="math">\(\bf NOTE:\)</span> For parallel runs, Mglob and Nglob can be divided by PX and PY, respectively. MAX(Mglob,Nglob) can be divided by PX <span class="math">\(\times\)</span> PY.</dd>
+<p>Mglob: global dimension in <span class="math notranslate nohighlight">\(x\)</span> direction.</p>
+<dl class="simple">
+<dt>Nglob: global dimension in <span class="math notranslate nohighlight">\(y\)</span> direction.    </dt><dd><p><span class="math notranslate nohighlight">\(\bf NOTE:\)</span> For parallel runs, Mglob and Nglob can be divided by PX and PY, respectively. MAX(Mglob,Nglob) can be divided by PX <span class="math notranslate nohighlight">\(\times\)</span> PY.</p>
+</dd>
 </dl>
 <ul class="simple">
-<li><strong>SPECIFICATION OF STATIONARY MODE</strong></li>
+<li><p><strong>SPECIFICATION OF STATIONARY MODE</strong></p></li>
 </ul>
-<dl class="docutils">
-<dt>N_ITERATION: the iteration number for stationary mode of SHORECIRC   </dt>
-<dd>(set -DSTATIONARY in Makefile).</dd>
-<dt>WATER_LEVEL_FILE:  the file name of water level file containing time and water level, for   </dt>
-<dd><blockquote class="first">
-<div>stationary mode. The following example shows the format.</div></blockquote>
-<div class="last line-block">
+<dl>
+<dt>N_ITERATION: the iteration number for stationary mode of SHORECIRC   </dt><dd><p>(set -DSTATIONARY in Makefile).</p>
+</dd>
+<dt>WATER_LEVEL_FILE:  the file name of water level file containing time and water level, for   </dt><dd><blockquote>
+<div><p>stationary mode. The following example shows the format.</p>
+</div></blockquote>
+<div class="line-block">
 <div class="line">water levels for stationary mode</div>
 <div class="line">5   - number of water level data</div>
 <div class="line">0.0       0.0 ! Time (s), Level (m)</div>
@@ -224,40 +218,41 @@
 </dd>
 </dl>
 <ul class="simple">
-<li><strong>SPECIFICATION OF TIME</strong></li>
+<li><p><strong>SPECIFICATION OF TIME</strong></p></li>
 </ul>
 <p>PLOT_INTV: output interval in seconds (Note, output time is not exact because adaptive dt is used.)</p>
 <p>SCREEN_INTV: time interval (s) of screen print.</p>
 <p>PLOT_INTV_STATION: time interval (s) of gauge output</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF GRID</strong></li>
+<li><p><strong>SPECIFICATION OF GRID</strong></p></li>
 </ul>
-<p>DX: grid size(m) in <span class="math">\(x\)</span> direction, for Cartesian mode</p>
-<p>DY: grid size(m) in <span class="math">\(y\)</span> direction, for Cartesian mode</p>
+<p>DX: grid size(m) in <span class="math notranslate nohighlight">\(x\)</span> direction, for Cartesian mode</p>
+<p>DY: grid size(m) in <span class="math notranslate nohighlight">\(y\)</span> direction, for Cartesian mode</p>
 <p>X_FILE: name of file to store x for curvilinear mode</p>
-<dl class="docutils">
-<dt>Y_FILE: name of file to store y for curvilinear mode   </dt>
-<dd><span class="math">\(\bf NOTE:\)</span> data format is the same as the depth data shown above.</dd>
+<dl class="simple">
+<dt>Y_FILE: name of file to store y for curvilinear mode   </dt><dd><p><span class="math notranslate nohighlight">\(\bf NOTE:\)</span> data format is the same as the depth data shown above.</p>
+</dd>
 </dl>
 <p>CORI_CONSTANT: logical parameter for constant Coriolis parameter</p>
 <p>LATITUDE: latitude if constant Coriolis parameter is used</p>
-<dl class="docutils">
-<dt>LATITUDE_FILE: name of file to store latitude at every grid point if not constant Coriolis   </dt>
-<dd><span class="math">\(\bf NOTE:\)</span> data format is the same as the depth data shown above.</dd>
+<dl class="simple">
+<dt>LATITUDE_FILE: name of file to store latitude at every grid point if not constant Coriolis   </dt><dd><p><span class="math notranslate nohighlight">\(\bf NOTE:\)</span> data format is the same as the depth data shown above.</p>
+</dd>
 </dl>
 <ul class="simple">
-<li><strong>BOUNDARY CONDITIONS</strong></li>
+<li><p><strong>BOUNDARY CONDITIONS</strong></p></li>
 </ul>
 <p>ETA_CLAMPED: logical parameter for surface elevation clamped condition</p>
 <p>V_CLAMPED: logical parameter for velocity clamped condition</p>
 <p>FLUX_CLAMPED: logical parameter for flux clamped condition</p>
 <p>TIDE_FILE: name of file to store tidal constituents</p>
 <blockquote>
-<div><strong>DATA FORMAT:</strong> please refer to <strong>mk_tide.f90</strong>.
-The formula of surface elevation at a tidal boundary can be expressed by</div></blockquote>
-<div class="math" id="equation-nearcom_user_manual:0">
-<span class="eqno">(1)<a class="headerlink" href="#equation-nearcom_user_manual:0" title="Permalink to this equation">¶</a></span>\[\eta_0 (t) =  \sum_{n=1}^Na_{0}({\bf x}, n) f_c (n) \cos \left(\frac{2\pi}{T(n)} t - \phi({\bf x}, n)  + (V_0 +u_0)(n) \right)\]</div>
-<p>where <span class="math">\(a_0\)</span>  and <span class="math">\(\phi\)</span> represent amplitude and phase lag, respectively, for a harmonic constituent at location <span class="math">\(\bf x\)</span>. <span class="math">\(T\)</span> is tidal period. <span class="math">\(f_c\)</span> and <span class="math">\((V_0+u_0)\)</span> are the lunar node factor and the equilibrium argument, respectively, for a constituent.</p>
+<div><p><strong>DATA FORMAT:</strong> please refer to <strong>mk_tide.f90</strong>.
+The formula of surface elevation at a tidal boundary can be expressed by</p>
+</div></blockquote>
+<div class="math notranslate nohighlight" id="equation-nearcom-user-manual-0">
+<span class="eqno">(67)<a class="headerlink" href="#equation-nearcom-user-manual-0" title="Permalink to this equation">¶</a></span>\[\eta_0 (t) =  \sum_{n=1}^Na_{0}({\bf x}, n) f_c (n) \cos \left(\frac{2\pi}{T(n)} t - \phi({\bf x}, n)  + (V_0 +u_0)(n) \right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(a_0\)</span>  and <span class="math notranslate nohighlight">\(\phi\)</span> represent amplitude and phase lag, respectively, for a harmonic constituent at location <span class="math notranslate nohighlight">\(\bf x\)</span>. <span class="math notranslate nohighlight">\(T\)</span> is tidal period. <span class="math notranslate nohighlight">\(f_c\)</span> and <span class="math notranslate nohighlight">\((V_0+u_0)\)</span> are the lunar node factor and the equilibrium argument, respectively, for a constituent.</p>
 <blockquote>
 <div><div class="line-block">
 <div class="line">The following is an example of M2 + O1.</div>
@@ -266,15 +261,15 @@ The formula of surface elevation at a tidal boundary can be expressed by</div></
 <div class="line">tidal boundary conditions</div>
 <div class="line">150 — number of days from Jan 1,  to simulation date</div>
 <div class="line">2 —  number of constituents</div>
-<div class="line">1.000       0.000  — <span class="math">\(f_c\)</span> and <span class="math">\((V_0+u_0)\)</span> for M2</div>
-<div class="line">0.980       0.000  — <span class="math">\(f_c\)</span> and <span class="math">\((V_0+u_0)\)</span> for O1</div>
+<div class="line">1.000       0.000  — <span class="math notranslate nohighlight">\(f_c\)</span> and <span class="math notranslate nohighlight">\((V_0+u_0)\)</span> for M2</div>
+<div class="line">0.980       0.000  — <span class="math notranslate nohighlight">\(f_c\)</span> and <span class="math notranslate nohighlight">\((V_0+u_0)\)</span> for O1</div>
 <div class="line">80   —  number of tidal boundary points</div>
 <div class="line">1 , 1   —  (i,j) grid location of tidal boundary</div>
-<div class="line">12.420   1.200   21.000 — <span class="math">\(T\)</span>, amplitude <span class="math">\(a_0\)</span> and phase lag <span class="math">\(\phi\)</span> for M2</div>
-<div class="line">24.000   0.3  30.100 – <span class="math">\(T\)</span>, amplitude <span class="math">\(a_0\)</span> and phase lag <span class="math">\(\phi\)</span> for O1</div>
+<div class="line">12.420   1.200   21.000 — <span class="math notranslate nohighlight">\(T\)</span>, amplitude <span class="math notranslate nohighlight">\(a_0\)</span> and phase lag <span class="math notranslate nohighlight">\(\phi\)</span> for M2</div>
+<div class="line">24.000   0.3  30.100 – <span class="math notranslate nohighlight">\(T\)</span>, amplitude <span class="math notranslate nohighlight">\(a_0\)</span> and phase lag <span class="math notranslate nohighlight">\(\phi\)</span> for O1</div>
 <div class="line">2 , 1  —  (i,j) grid location of tidal boundary</div>
-<div class="line">12.420   1.200  21.000   — <span class="math">\(T\)</span>, amplitude <span class="math">\(a_0\)</span> and phase lag <span class="math">\(\phi\)</span> for M2</div>
-<div class="line">24.000   0.3   30.100 – <span class="math">\(T\)</span>, amplitude <span class="math">\(a_0\)</span> and phase lag <span class="math">\(\phi\)</span> for O1</div>
+<div class="line">12.420   1.200  21.000   — <span class="math notranslate nohighlight">\(T\)</span>, amplitude <span class="math notranslate nohighlight">\(a_0\)</span> and phase lag <span class="math notranslate nohighlight">\(\phi\)</span> for M2</div>
+<div class="line">24.000   0.3   30.100 – <span class="math notranslate nohighlight">\(T\)</span>, amplitude <span class="math notranslate nohighlight">\(a_0\)</span> and phase lag <span class="math notranslate nohighlight">\(\phi\)</span> for O1</div>
 <div class="line">3 ,  1</div>
 <div class="line">…</div>
 </div>
@@ -311,7 +306,7 @@ The formula of surface elevation at a tidal boundary can be expressed by</div></
 </div>
 </div></blockquote>
 <ul>
-<li><p class="first"><strong>WIND CONDITION</strong></p>
+<li><p><strong>WIND CONDITION</strong></p>
 <p>Spatially uniform wind field is assumed in this version.</p>
 </li>
 </ul>
@@ -330,19 +325,20 @@ The formula of surface elevation at a tidal boundary can be expressed by</div></
 </div></blockquote>
 <p>Cdw: wind stress coefficient for the quadratic formula.</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF INITIAL CONDITION</strong></li>
+<li><p><strong>SPECIFICATION OF INITIAL CONDITION</strong></p></li>
 </ul>
 <p>INT_UVZ : logical parameter for initial condition, default is FALSE</p>
-<p>ETA_FILE: name of file for initial <span class="math">\(\eta\)</span>, e.g., ETA_FILE= /Users/fengyanshi/work/input/CVV_H.grd, data format is the same as depth data.</p>
-<p>U_FILE:  name of file for initial <span class="math">\(u\)</span>, e.g.,U_FILE= /Users/fengyanshi/work/input/CVV_U.grd, data format is the same as depth data.</p>
-<p>V_FILE:  name of file for initial <span class="math">\(v\)</span>, e.g., V_FILE= /Users/fengyanshi/work/input/CVV_V.grd, data format is the same as depth data.</p>
+<p>ETA_FILE: name of file for initial <span class="math notranslate nohighlight">\(\eta\)</span>, e.g., ETA_FILE= /Users/fengyanshi/work/input/CVV_H.grd, data format is the same as depth data.</p>
+<p>U_FILE:  name of file for initial <span class="math notranslate nohighlight">\(u\)</span>, e.g.,U_FILE= /Users/fengyanshi/work/input/CVV_U.grd, data format is the same as depth data.</p>
+<p>V_FILE:  name of file for initial <span class="math notranslate nohighlight">\(v\)</span>, e.g., V_FILE= /Users/fengyanshi/work/input/CVV_V.grd, data format is the same as depth data.</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF WAVEMAKER</strong></li>
+<li><p><strong>SPECIFICATION OF WAVEMAKER</strong></p></li>
 </ul>
 <blockquote>
-<div>There is no wavemaker implemented in SHORECIRC.</div></blockquote>
+<div><p>There is no wavemaker implemented in SHORECIRC.</p>
+</div></blockquote>
 <ul>
-<li><p class="first"><strong>SPECIFICATION OF PERIODIC BOUNDARY CONDITION</strong></p>
+<li><p><strong>SPECIFICATION OF PERIODIC BOUNDARY CONDITION</strong></p>
 <p>(Note: only south-north periodic condition was implemented)</p>
 </li>
 </ul>
@@ -350,78 +346,78 @@ The formula of surface elevation at a tidal boundary can be expressed by</div></
 <p>PERIODIC_Y: logical parameter for periodic boundary condition in x direction.</p>
 <p>Num_Transit: grid numbers needed to make periodic condition for SWAN. The reason to set this parameter is that SWAN doesn’t have an option for periodic boundary condition. In this implementation, a periodic boundary condition is implemented by making a transition from  a left array ( count to Num_Transit from left boundary) to a right array.</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF SPONGE LAYER</strong></li>
+<li><p><strong>SPECIFICATION OF SPONGE LAYER</strong></p></li>
 </ul>
 <p>SPONGE_ON: logical parameter, T - sponge layer, F - no sponge layer.</p>
 <p>Sponge_west_width: width (m) of sponge layer at west boundary.</p>
 <p>Sponge_east_width:   width (m) of sponge layer at east boundary.</p>
 <p>Sponge_south_width: width (m) of sponge layer at south boundary.</p>
 <p>Sponge_north_width width (m) of sponge layer at north boundary</p>
-<p>R_sponge: decay rate in sponge layer. Its values are between 0.85 <span class="math">\(\sim\)</span> 0.95.</p>
-<p>A_sponge: maximum damping magnitude. The value is <span class="math">\(\sim\)</span> 5.0.</p>
+<p>R_sponge: decay rate in sponge layer. Its values are between 0.85 <span class="math notranslate nohighlight">\(\sim\)</span> 0.95.</p>
+<p>A_sponge: maximum damping magnitude. The value is <span class="math notranslate nohighlight">\(\sim\)</span> 5.0.</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF OBSTACLES</strong></li>
+<li><p><strong>SPECIFICATION OF OBSTACLES</strong></p></li>
 </ul>
-<p>OBSTACLE_FILE: name of obstacle file. 1 - water point, 0 - permanent dry point. Data dimension is (Mglob <span class="math">\(\times\)</span> Nglob). Data format is the same as the depth data.</p>
+<p>OBSTACLE_FILE: name of obstacle file. 1 - water point, 0 - permanent dry point. Data dimension is (Mglob <span class="math notranslate nohighlight">\(\times\)</span> Nglob). Data format is the same as the depth data.</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF PHYSICS</strong></li>
+<li><p><strong>SPECIFICATION OF PHYSICS</strong></p></li>
 </ul>
 <p>Cd: quadratic bottom friction coefficient</p>
 <p>nu_bkgd : background eddy viscosity parameter.</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF NUMERICS</strong></li>
+<li><p><strong>SPECIFICATION OF NUMERICS</strong></p></li>
 </ul>
 <p>Time_Scheme: stepping option,  Runge_Kutta or Predictor_Corrector (not suggested for this version).</p>
 <p>HIGH_ORDER: spatial scheme option,  FOURTH for the fourth-order, THIRD for the third-order, and SECOND for the second-order (not suggested for Boussinesq modeling).</p>
 <p>CONSTRUCTION: construction method,  HLL for HLL scheme, otherwise for averaging scheme.</p>
-<p>CFL: CFL number, CFL <span class="math">\(\sim\)</span> 0.5.</p>
-<p>FroudeCap: cap for Froude number in velocity calculation for efficiency. The value could be 5 <span class="math">\(\sim\)</span> 10.0.</p>
+<p>CFL: CFL number, CFL <span class="math notranslate nohighlight">\(\sim\)</span> 0.5.</p>
+<p>FroudeCap: cap for Froude number in velocity calculation for efficiency. The value could be 5 <span class="math notranslate nohighlight">\(\sim\)</span> 10.0.</p>
 <p>MinDepth: minimum water depth (m) for wetting and drying scheme. Suggestion: MinDepth = 0.001 for lab scale and 0.01 for field scale.</p>
 <p>MinDepthFrc: minimum water depth (m) to limit bottom friction value. Suggestion: MinDepthFrc = 0.01 for lab scale and 0.1 for field scale.</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF TIDAL RESIDUAL</strong></li>
+<li><p><strong>SPECIFICATION OF TIDAL RESIDUAL</strong></p></li>
 </ul>
 <p>T_INTV_mean: time-averaging interval for Eulerian mean current and elevation. Note: use -DRESIDUAL in Makefile to make this option active.</p>
 <ul>
-<li><p class="first"><strong>SPECIFICATION OF SEDIMENT CALCULATION</strong></p>
+<li><p><strong>SPECIFICATION OF SEDIMENT CALCULATION</strong></p>
 <p>Note: set -DSEDIMENT in Makefile to make sediment module active</p>
 </li>
 </ul>
 <p>T_INTV_sed: time interval to call sediment module</p>
 <p>Factor_Morpho: morphology factor.</p>
-<p>D_50 : <span class="math">\(D_{50}\)</span></p>
-<p>D_90 : <span class="math">\(D_{90}\)</span></p>
+<p>D_50 : <span class="math notranslate nohighlight">\(D_{50}\)</span></p>
+<p>D_90 : <span class="math notranslate nohighlight">\(D_{90}\)</span></p>
 <p>por:  sediment porosity</p>
 <p>RHO: water density</p>
 <p>nu_water: water eddy viscosity</p>
 <p>S_sed: specific gravity</p>
 <p>SOULSBY: logical parameter for Soulsby (1997) total load formula, T = true, F = false</p>
-<p>z0: <span class="math">\(z_0\)</span>, bed roughness length.</p>
+<p>z0: <span class="math notranslate nohighlight">\(z_0\)</span>, bed roughness length.</p>
 <p>KOBAYASHI: logical parameter for KOBAYASHI’s formula, T = true, F = false</p>
 <p>angle_x_beach: coordinate rotation angle defined in Figure 1.</p>
-<p>eB: <span class="math">\(e_B\)</span>,  suspension efficiency for energy dissipation rate due to wave breaking</p>
-<p>ef: <span class="math">\(e_f\)</span>, suspension efficiency for energy dissipation rate due to bottom friction</p>
-<p>a_k: <span class="math">\(a\)</span>, empirical suspended load parameter.</p>
-<p>b_k: <span class="math">\(b\)</span>, empirical bedload parameter.</p>
-<p>TanPhi: <span class="math">\(\tan \phi\)</span>, where <span class="math">\(\phi\)</span> is the angle of internal friction of the sediment.</p>
-<p>Gm: <span class="math">\(G_m\)</span> for slope function (<span class="math">\(G_m=10\)</span>).</p>
+<p>eB: <span class="math notranslate nohighlight">\(e_B\)</span>,  suspension efficiency for energy dissipation rate due to wave breaking</p>
+<p>ef: <span class="math notranslate nohighlight">\(e_f\)</span>, suspension efficiency for energy dissipation rate due to bottom friction</p>
+<p>a_k: <span class="math notranslate nohighlight">\(a\)</span>, empirical suspended load parameter.</p>
+<p>b_k: <span class="math notranslate nohighlight">\(b\)</span>, empirical bedload parameter.</p>
+<p>TanPhi: <span class="math notranslate nohighlight">\(\tan \phi\)</span>, where <span class="math notranslate nohighlight">\(\phi\)</span> is the angle of internal friction of the sediment.</p>
+<p>Gm: <span class="math notranslate nohighlight">\(G_m\)</span> for slope function (<span class="math notranslate nohighlight">\(G_m=10\)</span>).</p>
 <p>frc: friction coefficient in Kobayashi.</p>
-<p>Si_c: a coefficient in calculating <span class="math">\(P_b\)</span>.</p>
+<p>Si_c: a coefficient in calculating <span class="math notranslate nohighlight">\(P_b\)</span>.</p>
 <ul class="simple">
-<li><strong>SPECIFICATION OF OUTPUT VARIABLES</strong></li>
+<li><p><strong>SPECIFICATION OF OUTPUT VARIABLES</strong></p></li>
 </ul>
-<p>NumberStations: number of station for output. If NumberStations <span class="math">\(&gt; 0\)</span>, need input i,j in STATION_FILE</p>
+<p>NumberStations: number of station for output. If NumberStations <span class="math notranslate nohighlight">\(&gt; 0\)</span>, need input i,j in STATION_FILE</p>
 <p>DEPTH_OUT: logical parameter for output depth. T or F.</p>
-<p>U: logical parameter for output <span class="math">\(u\)</span>. T or F.</p>
-<p>V: logical parameter for output <span class="math">\(v\)</span>. T or F.</p>
-<p>ETA: logical parameter for output <span class="math">\(\eta\)</span>. T or F.</p>
-<p>HS: logical parameter for output of significant wave height <span class="math">\(H_s\)</span>. T or F.</p>
+<p>U: logical parameter for output <span class="math notranslate nohighlight">\(u\)</span>. T or F.</p>
+<p>V: logical parameter for output <span class="math notranslate nohighlight">\(v\)</span>. T or F.</p>
+<p>ETA: logical parameter for output <span class="math notranslate nohighlight">\(\eta\)</span>. T or F.</p>
+<p>HS: logical parameter for output of significant wave height <span class="math notranslate nohighlight">\(H_s\)</span>. T or F.</p>
 <p>WFC: logical parameter for output of wave force. T or F.</p>
 <p>WDIR: logical parameter for output of peak wave direction. T or F.</p>
 <p>WBV: logical parameter for output of wave orbital velocity. T or F.</p>
 <p>MASK: logical parameter for output wetting-drying MASK. T or F.</p>
-<p>SourceX: logical parameter for output source terms in <span class="math">\(x\)</span> direction. T or F.</p>
-<p>SourceY:  logical parameter for output source terms in <span class="math">\(y\)</span> direction. T or F.</p>
+<p>SourceX: logical parameter for output source terms in <span class="math notranslate nohighlight">\(x\)</span> direction. T or F.</p>
+<p>SourceY:  logical parameter for output source terms in <span class="math notranslate nohighlight">\(y\)</span> direction. T or F.</p>
 <p>UV3D: logical parameter for output 3D structure. T or F.</p>
 <p>Qstk:   logical parameter for output Stokes mass flux. T or F.</p>
 <p>DepDt:  logical parameter for output depth variation rate. T or F.</p>
@@ -435,46 +431,67 @@ The formula of surface elevation at a tidal boundary can be expressed by</div></
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#"><strong>USERS’ MANUAL</strong></a><ul>
-<li><a class="reference internal" href="#program-outline-and-flow-chart">Program outline and flow chart</a></li>
-<li><a class="reference internal" href="#permanent-variables-associated-with-coupling">Permanent variables associated with coupling</a></li>
-<li><a class="reference internal" href="#installation-and-compilation">Installation and compilation</a></li>
-<li><a class="reference internal" href="#input">Input</a></li>
-<li><a class="reference internal" href="#output">Output</a></li>
+<h1 class="logo"><a href="index.html">NearCoM_WIKI</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="nearcom_history.html"><strong>WHAT IS NearCoM</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_formulation.html"><strong>FORMULATIONS</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_numerical_scheme.html"><strong>NUMERICAL SCHEMES FOR SHORECIRC</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_swan_shorecirc.html"><strong>SWAN-SHORECIRC COUPLING AND PARALLELIZATION</strong></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><strong>USERS’ MANUAL</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#program-outline-and-flow-chart">Program outline and flow chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#permanent-variables-associated-with-coupling">Permanent variables associated with coupling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-and-compilation">Installation and compilation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input">Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output">Output</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_examples.html"><strong>EXAMPLES</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_bibliography.html"><strong>BIBLIOGRAPHY</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_authors.html"><strong>AUTHORS</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_gallery.html"><strong>GALLERY</strong></a></li>
 </ul>
+
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="nearcom_swan_shorecirc.html" title="previous chapter"><strong>SWAN-SHORECIRC COUPLING AND PARALLELIZATION</strong></a></li>
+      <li>Next: <a href="nearcom_examples.html" title="next chapter"><strong>EXAMPLES</strong></a></li>
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/nearcom_user_manual.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -483,8 +500,8 @@ The formula of surface elevation at a tidal boundary can be expressed by</div></
       &copy;2017, Fengyan Shi.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.0b2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/nearcom_user_manual.rst.txt"
