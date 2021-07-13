@@ -1,27 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>WHAT IS NearCoM &#8212; NearCoM_WIKI 1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FORMULATIONS" href="nearcom_formulation.html" />
@@ -32,46 +23,72 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="what-is-nearcom">
 <h1><strong>WHAT IS NearCoM</strong><a class="headerlink" href="#what-is-nearcom" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li>History of NearCoM model development</li>
+<li><p>History of NearCoM model development</p></li>
 </ul>
-<p>NearCoM (or Nearshore Community Model) is initially an extensible, user-configurable model system for nearshore wave, circulation and sediment processes developed during the National Oceanographic Partnership Program (NOPP). The model consists of a “backbone”, i.e., the master program, handling data input and output as well as internal storage, together with a suite of “modules”, each of which handles a focused subset of the physical processes being studied. A wave module will model wave transformation over arbitrary coastal bathymetry and predict radiation stresses and wave induced mass fluxes. A circulation module will model the slowly varying current field driven by waves, wind and buoyancy forcing, and will provide information about the bottom boundary layer structure. A seabed module will model sediment transport, determine the bedform geometry, parameterize the bedform effect on bottom friction, and compute morphological evolution resulting from spatial variations in local sediment transport rates. The model package includes more than 10 modules developed by a group of institutions involving this project. The initially package can be downloaded from <a class="reference download internal" href="_downloads/initial_nearcom.zip" download=""><code class="xref download docutils literal"><span class="pre">here</span></code></a></p>
+<p>NearCoM (or Nearshore Community Model) is initially an extensible, user-configurable model system for nearshore wave, circulation and sediment processes developed during the National Oceanographic Partnership Program (NOPP). The model consists of a “backbone”, i.e., the master program, handling data input and output as well as internal storage, together with a suite of “modules”, each of which handles a focused subset of the physical processes being studied. A wave module will model wave transformation over arbitrary coastal bathymetry and predict radiation stresses and wave induced mass fluxes. A circulation module will model the slowly varying current field driven by waves, wind and buoyancy forcing, and will provide information about the bottom boundary layer structure. A seabed module will model sediment transport, determine the bedform geometry, parameterize the bedform effect on bottom friction, and compute morphological evolution resulting from spatial variations in local sediment transport rates. The model package includes more than 10 modules developed by a group of institutions involving this project. The initially package can be downloaded from <a class="reference download internal" download="" href="_downloads/701e1f04761444e9b4012cb3bedd9c6b/initial_nearcom.zip"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a></p>
 <p>Modules in the original NearCoM system are developed specifically for predicting nearshore waves and wave-induced nearshore processes, basically the region between the shoreline and about 10 m water depth. Hence, the applications of NearCoM to ocean-exposed coastal regions are limited. There is a growing demand recently to use NearCoM in more general coastal applications such as storm-induced coastal inundation, beach and dune erosion, and wave–current interaction in inlet systems. Therefore, a new model coupling system called NearCoM-TVD was developed based on one of the combinations of the original NearCoM system. NearCoM-TVD couples a newly developed nearshore circulation model, SHORECIRC, using a hybrid finite-difference finite-volume TVD-type scheme, the wave model SWAN and several sediment transport modules, such as Kobayshi et al. (2008), Soulsby (1997) and van Rijn et al. (2011).</p>
 <p>Detailed documentation of NearCoM-TVD can be found in Chen et al. (2014) or this Wiki page.</p>
 <p>Chen J.-L., Shi F., Hsu T.-J., and Kirby, J. T., 2014, NearCoM-TVD - A quasi-3D nearshore circulation and sediment transport model, <em>Coastal Engineering</em>, <strong>91</strong>, 200-212.</p>
 <ul class="simple">
-<li>New features</li>
+<li><p>New features</p></li>
 </ul>
 <blockquote>
 <div><ul class="simple">
-<li>A conservative form of SHORECIRC equations in non-orthogonal curvilinear coordinates;</li>
-<li>MUSCL-TVD solver with adaptive Runge-Kutta time stepping;</li>
-<li>Wetting-drying moving boundary condition with incorporation of HLL construction method into the scheme;</li>
-<li>Fully parallel computation with equal CPU load for each processor.</li>
-<li>Concurrent Correction Method (Shi et al., 2015);</li>
+<li><p>A conservative form of SHORECIRC equations in non-orthogonal curvilinear coordinates;</p></li>
+<li><p>MUSCL-TVD solver with adaptive Runge-Kutta time stepping;</p></li>
+<li><p>Wetting-drying moving boundary condition with incorporation of HLL construction method into the scheme;</p></li>
+<li><p>Fully parallel computation with equal CPU load for each processor.</p></li>
+<li><p>Concurrent Correction Method (Shi et al., 2015);</p></li>
 </ul>
 <blockquote>
-<div>Shi, F., Vittori, G. and Kirby, J. T., 2015, “Concurrent correction method for modeling morphological response to dredging an offshore sandpit”, Coastal Engineering , 97,1-10.</div></blockquote>
+<div><p>Shi, F., Vittori, G. and Kirby, J. T., 2015, “Concurrent correction method for modeling morphological response to dredging an offshore sandpit”, Coastal Engineering , 97,1-10.</p>
+</div></blockquote>
 </div></blockquote>
 </div>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">NearCoM_WIKI</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><strong>WHAT IS NearCoM</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_formulation.html"><strong>FORMULATIONS</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_numerical_scheme.html"><strong>NUMERICAL SCHEMES FOR SHORECIRC</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_swan_shorecirc.html"><strong>SWAN-SHORECIRC COUPLING AND PARALLELIZATION</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_user_manual.html"><strong>USERS’ MANUAL</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_examples.html"><strong>EXAMPLES</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_bibliography.html"><strong>BIBLIOGRAPHY</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_authors.html"><strong>AUTHORS</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="nearcom_gallery.html"><strong>GALLERY</strong></a></li>
+</ul>
+
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
@@ -80,23 +97,24 @@
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/nearcom_history.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -105,8 +123,8 @@
       &copy;2017, Fengyan Shi.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.0b2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/nearcom_history.rst.txt"
