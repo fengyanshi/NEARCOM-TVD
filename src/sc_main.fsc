@@ -746,21 +746,21 @@ SUBROUTINE STATISTICS
 # endif
 
 ! print screen
-     WRITE(*,*),'----------------- STATISTICS ----------------'
-     WRITE(*,*),' TIME        DT'
+     WRITE(*,*)'----------------- STATISTICS ----------------'
+     WRITE(*,*)' TIME        DT'
      WRITE(*,101) Time, DT
-     WRITE(*,*),' MassVolume  Energy      MaxEta      MinEta      Max U       Max V '
-     WRITE(*,101), MassVolume,Energy,MaxEta,MinEta,MaxU,MaxV
-     WRITE(*,*),' MaxTotalU   PhaseS      Froude '
-     WRITE(*,101), UTotalMax, Fr, UTotalMax/Fr
+     WRITE(*,*)' MassVolume  Energy      MaxEta      MinEta      Max U       Max V '
+     WRITE(*,101) MassVolume,Energy,MaxEta,MinEta,MaxU,MaxV
+     WRITE(*,*)' MaxTotalU   PhaseS      Froude '
+     WRITE(*,101) UTotalMax, Fr, UTotalMax/Fr
 ! print log file
-     WRITE(3,*),'----------------- STATISTICS ----------------'
-     WRITE(3,*),' TIME        DT'
+     WRITE(3,*)'----------------- STATISTICS ----------------'
+     WRITE(3,*)' TIME        DT'
      WRITE(3,101) Time, DT
-     WRITE(3,*),' MassVolume  Energy      MaxEta      MinEta      Max U       Max V '
-     WRITE(3,101), MassVolume,Energy,MaxEta,MinEta,MaxU,MaxV
-     WRITE(3,*),' MaxTotalU   PhaseS      Froude '
-     WRITE(3,101), UTotalMax, Fr, UTotalMax/Fr
+     WRITE(3,*)' MassVolume  Energy      MaxEta      MinEta      Max U       Max V '
+     WRITE(3,101) MassVolume,Energy,MaxEta,MinEta,MaxU,MaxV
+     WRITE(3,*)' MaxTotalU   PhaseS      Froude '
+     WRITE(3,101) UTotalMax, Fr, UTotalMax/Fr
 # if defined (PARALLEL)
      endif
 # endif
